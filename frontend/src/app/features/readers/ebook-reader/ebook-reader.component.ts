@@ -35,6 +35,7 @@ import {TranslocoPipe} from '@jsverse/transloco';
 import {RelocateProgressData} from './state/progress.service';
 import {WakeLockService} from '../../../shared/service/wake-lock.service';
 import {ViewEvent} from './core/view-manager.service';
+import {PageTitleService} from '../../../shared/service/page-title.service';
 
 interface PendingInitialChapterRestore {
   href: string;
@@ -96,6 +97,7 @@ export class EbookReaderComponent implements OnInit {
   private noteService = inject(ReaderNoteService);
   private wakeLockService = inject(WakeLockService);
   private messageService = inject(MessageService);
+  private pageTitle = inject(PageTitleService);
 
   public sidebarService = inject(ReaderSidebarService);
   public leftSidebarService = inject(ReaderLeftSidebarService);
@@ -214,6 +216,7 @@ export class EbookReaderComponent implements OnInit {
     ]).pipe(
       switchMap(([, book]) => {
         this.book.set(book);
+        this.pageTitle.setBookPageTitle(book);
         const bookType = (this.altBookType as BookType | undefined) ?? book.primaryFile?.bookType;
         if (!bookType) {
           return throwError(() => new Error('Book type not found'));
