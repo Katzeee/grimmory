@@ -1,13 +1,14 @@
 package org.booklore.service.oidc;
 
 import com.nimbusds.jose.jwk.JWKSet;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.booklore.model.dto.settings.OidcProviderDetails;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.booklore.util.FileUtils;
@@ -15,7 +16,6 @@ import org.springframework.web.client.RestTemplate;
 
 @Slf4j
 @Service
-@AllArgsConstructor
 public class OidcDiagnosticService {
 
     public record OidcTestResult(boolean success, List<OidcTestCheck> checks) {}
@@ -24,10 +24,14 @@ public class OidcDiagnosticService {
 
     public enum CheckStatus { PASS, FAIL, WARN, SKIP }
 
-    private static final int CONNECT_TIMEOUT_MS = 10_000;
-    private static final int READ_TIMEOUT_MS = 10_000;
-
     private final RestTemplate oidcRestTemplate;
+
+    public OidcDiagnosticService(
+            @Qualifier("oidc")
+            RestTemplate oidcRestTemplate
+    ) {
+        this.oidcRestTemplate = oidcRestTemplate;
+    }
 
     @SuppressWarnings("unchecked")
     public OidcTestResult testConnection(OidcProviderDetails providerDetails) {
@@ -80,7 +84,13 @@ public class OidcDiagnosticService {
         // 3. Fetch JWKS
         if (jwksUri != null && !jwksUri.isBlank()) {
             try {
-                JWKSet jwkSet = JWKSet.load(URI.create(jwksUri).toURL());
+                Map<String, Object> jwksDoc = oidcRestTemplate.getForObject(jwksUri, Map.class);
+
+                if (jwksDoc == null) {
+                    jwksDoc = Map.of();
+                }
+
+                JWKSet jwkSet = JWKSet.parse(jwksDoc);
                 int keyCount = jwkSet.getKeys().size();
                 checks.add(new OidcTestCheck("JWKS Keys", CheckStatus.PASS, keyCount + " key(s) found"));
             } catch (Exception e) {
