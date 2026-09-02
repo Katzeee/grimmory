@@ -1,0 +1,486 @@
+<main class="folio" [attr.data-theme]="settings().theme">
+  <header class="folio-header" [class.folio-chrome-hidden]="!chromeVisible()">
+    <button class="folio-icon-button" type="button" (click)="close()" [attr.aria-label]="'readerEbook.header.closeReader' | transloco">
+      <svg appIcon="arrow-left"></svg>
+    </button>
+    <button class="folio-icon-button folio-desktop-control" type="button" (click)="toggleLibrary('contents')" [attr.aria-label]="'readerEbook.sidebar.contentsTab' | transloco" [attr.aria-expanded]="libraryVisible()">
+      <svg appIcon="panel-left"></svg>
+    </button>
+    <span class="folio-mobile-header-spacer" aria-hidden="true"></span>
+    <div class="folio-identity">
+      <span class="folio-mark">Folio</span>
+      <span class="folio-title">{{ book()?.metadata?.title }}</span>
+    </div>
+    <div class="folio-chapter">{{ chapter() }}</div>
+    <button class="folio-icon-button folio-desktop-control" type="button" (click)="toggleBookmark()" [attr.aria-label]="'readerEbook.header.addBookmark' | transloco">
+      <svg appIcon="bookmark"></svg>
+    </button>
+    <button class="folio-icon-button folio-desktop-control" type="button" (click)="toggleSettings()" [attr.aria-label]="'readerEbook.header.settings' | transloco" [attr.aria-expanded]="settingsVisible()">
+      <svg appIcon="settings-2"></svg>
+    </button>
+  </header>
+
+  <section class="folio-stage">
+    <div #viewer class="folio-viewer"></div>
+
+    @if (loading()) {
+      <div class="folio-status">
+        <span class="folio-spinner"></span>
+        <span>{{ 'readerEbook.reader.loadingBook' | transloco }}</span>
+      </div>
+    }
+
+    @if (error()) {
+      <div class="folio-status folio-status-error">
+        <strong>{{ 'common.error' | transloco }}</strong>
+        <span>{{ error() }}</span>
+        <button type="button" (click)="retry()">{{ 'common.retry' | transloco }}</button>
+      </div>
+    }
+
+    <button class="folio-edge folio-edge-left" type="button" (click)="turnFromSide('left')" [attr.aria-label]="'readerEbook.shortcutsHelp.previousPage' | transloco">
+      <svg appIcon="chevron-left"></svg>
+    </button>
+    <button class="folio-edge folio-edge-right" type="button" (click)="turnFromSide('right')" [attr.aria-label]="'readerEbook.shortcutsHelp.nextPage' | transloco">
+      <svg appIcon="chevron-right"></svg>
+    </button>
+  </section>
+
+  <footer class="folio-footer folio-desktop-footer" [class.folio-chrome-hidden]="!chromeVisible()">
+    <button class="folio-footer-button" type="button" (click)="historyBack()" [attr.aria-label]="'readerEbook.folio.historyBack' | transloco">
+      <svg appIcon="undo-2"></svg>
+    </button>
+    <button class="folio-footer-button" type="button" (click)="historyForward()" [attr.aria-label]="'readerEbook.folio.historyForward' | transloco">
+      <svg appIcon="redo-2"></svg>
+    </button>
+    <span>{{ progress() }}%</span>
+    <input type="range" min="0" max="100" step="0.1" [value]="progress()" [attr.dir]="progressDirection()" (input)="seekTo($any($event.target).valueAsNumber)" [attr.aria-label]="'readerEbook.footer.progress' | transloco">
+  </footer>
+
+  <footer class="folio-mobile-footer" [class.folio-chrome-hidden]="!chromeVisible()">
+    <input class="folio-mobile-progress" type="range" min="0" max="100" step="0.1" [value]="progress()" [attr.dir]="progressDirection()" (input)="seekTo($any($event.target).valueAsNumber)" [attr.aria-label]="'readerEbook.footer.progress' | transloco">
+    <nav class="folio-mobile-navigation" aria-label="Reader tools">
+      <button type="button" (click)="toggleLibrary('contents')" [class.active]="libraryVisible()" [attr.aria-label]="'readerEbook.sidebar.contentsTab' | transloco" [attr.aria-expanded]="libraryVisible()">
+        <svg appIcon="panel-left"></svg>
+        <span>{{ 'readerEbook.sidebar.contentsTab' | transloco }}</span>
+      </button>
+      <button type="button" (click)="toggleBookmark()" [attr.aria-label]="'readerEbook.header.addBookmark' | transloco">
+        <svg appIcon="bookmark"></svg>
+        <span>{{ 'readerEbook.sidebar.bookmarksTab' | transloco }}</span>
+      </button>
+      <div class="folio-mobile-location" [attr.aria-label]="'readerEbook.footer.progress' | transloco">
+        <strong>{{ progress() }}%</strong>
+        @if (currentPage() && totalPages()) {
+          <span>{{ 'readerEbook.folio.chapterPage' | transloco: {current: currentPage(), total: totalPages()} }}</span>
+        }
+      </div>
+      <button type="button" (click)="toggleSettings()" [class.active]="settingsVisible()" [attr.aria-label]="'readerEbook.header.settings' | transloco" [attr.aria-expanded]="settingsVisible()">
+        <svg appIcon="settings-2"></svg>
+        <span>{{ 'readerEbook.header.settings' | transloco }}</span>
+      </button>
+    </nav>
+  </footer>
+
+  <aside class="folio-library" [class.folio-library-open]="libraryVisible()" [class.folio-library-details-open]="bookDetailsVisible()" [attr.aria-hidden]="!libraryVisible()">
+    <div class="folio-library-header">
+      @if (bookDetailsVisible()) {
+        <div class="folio-library-heading">
+          <button class="folio-icon-button" type="button" (click)="closeBookDetails()" [attr.aria-label]="'common.back' | transloco">
+            <svg appIcon="arrow-left"></svg>
+          </button>
+          <strong>{{ 'readerEbook.metadataDialog.title' | transloco }}</strong>
+        </div>
+      } @else {
+        <span class="folio-eyebrow">Folio</span>
+      }
+      <button class="folio-icon-button" type="button" (click)="toggleLibrary()" [attr.aria-label]="'common.close' | transloco">
+        <svg appIcon="x"></svg>
+      </button>
+    </div>
+
+    @if (!bookDetailsVisible()) {
+      <div class="folio-library-book-section">
+        <div class="folio-book-card">
+          <app-cover
+            class="folio-book-cover"
+            [src]="bookCoverUrl()"
+            [title]="bookTitle()"
+            [authors]="bookAuthors()"
+            [alt]="bookTitle()"
+            size="sm"
+            [preview]="true" />
+          <div class="folio-book-copy">
+            <h2>{{ bookTitle() }}</h2>
+            @if (bookAuthors()) { <p>{{ bookAuthors() }}</p> }
+            @if (book()?.metadata?.seriesName) {
+              <small>
+                {{ book()?.metadata?.seriesName }}
+                @if (book()?.metadata?.seriesNumber) { <span>· {{ book()?.metadata?.seriesNumber }}</span> }
+              </small>
+            }
+          </div>
+          <button class="folio-icon-button folio-book-info-button" type="button" (click)="openBookDetails()" [attr.aria-label]="'readerEbook.folio.bookInformation' | transloco">
+            <svg appIcon="info"></svg>
+          </button>
+        </div>
+      </div>
+
+      <nav class="folio-library-tabs" aria-label="Reader tools">
+        <button type="button" [class.active]="libraryTab() === 'contents'" (click)="openLibrary('contents')">{{ 'readerEbook.sidebar.contentsTab' | transloco }}</button>
+        <button type="button" [class.active]="libraryTab() === 'search'" (click)="openLibrary('search')">{{ 'readerEbook.panel.searchTab' | transloco }}</button>
+        <button type="button" [class.active]="libraryTab() === 'bookmarks'" (click)="openLibrary('bookmarks')">{{ 'readerEbook.sidebar.bookmarksTab' | transloco }}</button>
+        <button type="button" [class.active]="libraryTab() === 'notes'" (click)="openLibrary('notes')">{{ 'readerEbook.panel.notesTab' | transloco }}</button>
+      </nav>
+
+      <div class="folio-library-body">
+        @switch (libraryTab()) {
+        @case ('contents') {
+          @for (item of library.tableOfContents(); track item.href) {
+            <button class="folio-toc-item" type="button" [class.active]="item.href === currentTocHref()" [style.padding-inline-start.rem]="0.75 + item.depth * 0.85" (click)="navigateTo(item.href)">
+              <span class="folio-toc-copy">
+                <span class="folio-toc-label">{{ item.label }}</span>
+                @if (item.href === currentTocHref() && currentLocation()) {
+                  <span class="folio-reading-position">
+                    <span class="folio-reading-dot" aria-hidden="true"></span>
+                    {{ 'readerEbook.folio.currentLocation' | transloco }}
+                    <span class="folio-reading-progress">{{ currentLocation() }}</span>
+                  </span>
+                }
+              </span>
+              @if (item.pageLabel) { <small class="folio-toc-page">{{ item.pageLabel }}</small> }
+            </button>
+          } @empty {
+            <p class="folio-empty">{{ 'readerEbook.folio.noChapters' | transloco }}</p>
+          }
+        }
+        @case ('search') {
+          <div class="folio-search-box">
+            <input #searchInput type="search" [value]="library.searchState().query" [placeholder]="'readerEbook.panel.searchPlaceholder' | transloco" (keyup.enter)="search(searchInput.value)">
+            <button type="button" (click)="search(searchInput.value)"><svg appIcon="search"></svg></button>
+            @if (library.searchState().query) {
+              <button type="button" (click)="searchInput.value = ''; clearSearch()"><svg appIcon="x"></svg></button>
+            }
+          </div>
+          @if (library.searchState().searching) {
+            <progress max="1" [value]="library.searchState().progress"></progress>
+          }
+          <div class="folio-library-list">
+            @for (result of library.searchState().results; track result.cfi) {
+              <button class="folio-result" type="button" (click)="navigateTo(result.cfi)">
+                @if (result.sectionLabel) { <strong>{{ result.sectionLabel }}</strong> }
+                <span>{{ result.excerpt.pre }}<mark>{{ result.excerpt.match }}</mark>{{ result.excerpt.post }}</span>
+              </button>
+            } @empty {
+              @if (library.searchState().query && !library.searchState().searching) {
+                <p class="folio-empty">{{ 'readerEbook.panel.noResultsFound' | transloco }}</p>
+              }
+            }
+          </div>
+        }
+        @case ('bookmarks') {
+          <div class="folio-library-list">
+            @for (bookmark of library.bookmarks(); track bookmark.id) {
+              <div class="folio-list-row">
+                <button type="button" (click)="navigateTo(bookmark.cfi!)">
+                  <strong>{{ bookmark.title }}</strong>
+                </button>
+                <button class="folio-delete" type="button" (click)="deleteBookmark(bookmark.id)" [attr.aria-label]="'readerEbook.sidebar.deleteBookmark' | transloco"><svg appIcon="trash-2"></svg></button>
+              </div>
+            } @empty {
+              <p class="folio-empty">{{ 'readerEbook.sidebar.noBookmarksYet' | transloco }}</p>
+            }
+          </div>
+        }
+        @case ('notes') {
+          <div class="folio-library-list">
+            @for (entry of library.noteItems(); track entry.kind + '-' + entry.item.id) {
+              <div class="folio-list-row folio-note-row">
+                <button type="button" (click)="navigateTo(entry.item.cfi)">
+                  @if (entry.kind === 'annotation') {
+                    <span class="folio-color" [style.background]="entry.item.color"></span>
+                    <strong>{{ entry.item.text }}</strong>
+                    @if (entry.item.note) { <span>{{ entry.item.note }}</span> }
+                  } @else {
+                    <span class="folio-color" [style.background]="entry.item.color"></span>
+                    <strong>{{ entry.item.noteContent }}</strong>
+                    @if (entry.item.selectedText) { <span>“{{ entry.item.selectedText }}”</span> }
+                  }
+                </button>
+                @if (entry.kind === 'annotation') {
+                  <button class="folio-delete" type="button" (click)="deleteAnnotation(entry.item)"><svg appIcon="trash-2"></svg></button>
+                } @else {
+                  <button class="folio-delete" type="button" (click)="deleteNote(entry.item.id)"><svg appIcon="trash-2"></svg></button>
+                }
+              </div>
+            } @empty {
+              <p class="folio-empty">{{ 'readerEbook.panel.noNotesYet' | transloco }}</p>
+            }
+          </div>
+        }
+        }
+      </div>
+    } @else {
+      <div class="folio-book-details-view">
+        <section class="folio-details-hero">
+          <app-cover
+            class="folio-details-cover"
+            [src]="bookCoverUrl()"
+            [title]="bookTitle()"
+            [authors]="bookAuthors()"
+            [alt]="bookTitle()"
+            size="md"
+            [preview]="true" />
+          <div class="folio-details-title">
+            <h2>{{ bookTitle() }}</h2>
+            @if (book()?.metadata?.subtitle) { <p>{{ book()?.metadata?.subtitle }}</p> }
+            @if (bookAuthors()) { <small>{{ bookAuthors() }}</small> }
+            @if (book()?.metadata?.seriesName) {
+              <small>
+                {{ book()?.metadata?.seriesName }}
+                @if (book()?.metadata?.seriesNumber) { <span>· {{ book()?.metadata?.seriesNumber }}</span> }
+                @if (book()?.metadata?.seriesTotal) { <span> / {{ book()?.metadata?.seriesTotal }}</span> }
+              </small>
+            }
+          </div>
+        </section>
+
+        <section class="folio-details-section">
+          <h3>{{ 'readerEbook.metadataDialog.basicInformation' | transloco }}</h3>
+          <dl class="folio-details-grid">
+            @if (book()?.metadata?.publisher) {
+              <div><dt>{{ 'readerEbook.metadataDialog.publisher' | transloco }}</dt><dd>{{ book()?.metadata?.publisher }}</dd></div>
+            }
+            @if (book()?.metadata?.publishedDate) {
+              <div><dt>{{ 'readerEbook.metadataDialog.published' | transloco }}</dt><dd>{{ book()?.metadata?.publishedDate }}</dd></div>
+            }
+            @if (book()?.metadata?.language) {
+              <div><dt>{{ 'readerEbook.metadataDialog.language' | transloco }}</dt><dd>{{ book()?.metadata?.language }}</dd></div>
+            }
+            @if (book()?.metadata?.pageCount) {
+              <div><dt>{{ 'readerEbook.metadataDialog.pages' | transloco }}</dt><dd>{{ book()?.metadata?.pageCount }}</dd></div>
+            }
+            @if (currentBookFile()?.bookType) {
+              <div><dt>{{ 'readerEbook.folio.format' | transloco }}</dt><dd>{{ currentBookFile()?.bookType }}</dd></div>
+            }
+            @if (book()?.metadata?.provider) {
+              <div><dt>{{ 'readerEbook.folio.metadataSource' | transloco }}</dt><dd>{{ book()?.metadata?.provider }}</dd></div>
+            }
+          </dl>
+        </section>
+
+        <section class="folio-details-section">
+          <h3>{{ 'readerEbook.folio.readingInformation' | transloco }}</h3>
+          <dl class="folio-details-grid">
+            @if (currentLocation()) {
+              <div><dt>{{ 'readerEbook.folio.currentLocation' | transloco }}</dt><dd>{{ currentLocation() }}</dd></div>
+            }
+            @if (totalLocations()) {
+              <div><dt>{{ 'readerEbook.folio.generatedLocations' | transloco }}</dt><dd>{{ totalLocations() }}</dd></div>
+            }
+            <div><dt>{{ 'readerEbook.footer.progress' | transloco }}</dt><dd>{{ progress() }}%</dd></div>
+            @if (chapter()) {
+              <div class="folio-details-wide"><dt>{{ 'readerEbook.footer.chapter' | transloco }}</dt><dd>{{ chapter() }}</dd></div>
+            }
+          </dl>
+        </section>
+
+        @if (book()?.metadata?.isbn13 || book()?.metadata?.isbn10 || book()?.metadata?.asin) {
+          <section class="folio-details-section">
+            <h3>{{ 'readerEbook.metadataDialog.identifiers' | transloco }}</h3>
+            <dl class="folio-details-grid">
+              @if (book()?.metadata?.isbn13) { <div><dt>ISBN-13</dt><dd>{{ book()?.metadata?.isbn13 }}</dd></div> }
+              @if (book()?.metadata?.isbn10) { <div><dt>ISBN-10</dt><dd>{{ book()?.metadata?.isbn10 }}</dd></div> }
+              @if (book()?.metadata?.asin) { <div><dt>ASIN</dt><dd>{{ book()?.metadata?.asin }}</dd></div> }
+            </dl>
+          </section>
+        }
+
+        <section class="folio-details-section">
+          <h3>{{ 'readerEbook.metadataDialog.fileInformation' | transloco }}</h3>
+          <dl class="folio-details-grid">
+            @if (currentBookFile()?.fileName) {
+              <div class="folio-details-wide"><dt>{{ 'readerEbook.metadataDialog.fileName' | transloco }}</dt><dd>{{ currentBookFile()?.fileName }}</dd></div>
+            }
+            @if (bookFileSize()) {
+              <div><dt>{{ 'readerEbook.metadataDialog.fileSize' | transloco }}</dt><dd>{{ bookFileSize() }}</dd></div>
+            }
+          </dl>
+        </section>
+
+        @if (book()?.metadata?.categories?.length || book()?.metadata?.tags?.length) {
+          <section class="folio-details-section">
+            @if (book()?.metadata?.categories?.length) {
+              <h3>{{ 'readerEbook.metadataDialog.categories' | transloco }}</h3>
+              <div class="folio-detail-chips">
+                @for (category of book()?.metadata?.categories; track category) { <span>{{ category }}</span> }
+              </div>
+            }
+            @if (book()?.metadata?.tags?.length) {
+              <h3>{{ 'readerEbook.metadataDialog.tags' | transloco }}</h3>
+              <div class="folio-detail-chips">
+                @for (tag of book()?.metadata?.tags; track tag) { <span>{{ tag }}</span> }
+              </div>
+            }
+          </section>
+        }
+
+        @if (book()?.metadata?.description) {
+          <section class="folio-details-section folio-details-description">
+            <h3>{{ 'readerEbook.metadataDialog.description' | transloco }}</h3>
+            <div [innerHTML]="book()?.metadata?.description"></div>
+          </section>
+        }
+      </div>
+    }
+  </aside>
+
+  <aside class="folio-settings" [class.folio-settings-open]="settingsVisible()" [attr.aria-hidden]="!settingsVisible()">
+    <div class="folio-settings-header">
+      <div>
+        <span class="folio-eyebrow">Folio</span>
+        <h2>{{ 'readerEbook.header.settings' | transloco }}</h2>
+      </div>
+      <button class="folio-icon-button" type="button" (click)="toggleSettings()" [attr.aria-label]="'common.close' | transloco">
+        <svg appIcon="x"></svg>
+      </button>
+    </div>
+
+    <div class="folio-settings-body">
+      <fieldset>
+        <legend>{{ 'readerEbook.settingsDialog.layout' | transloco }}</legend>
+        <div class="folio-segmented folio-segmented-three">
+          <button type="button" [class.active]="settings().writingMode === 'publisher'" (click)="setWritingMode('publisher')">{{ 'readerCbx.quickSettings.automatic' | transloco }}</button>
+          <button type="button" [class.active]="settings().writingMode === 'horizontal-tb'" (click)="setWritingMode('horizontal-tb')">{{ 'readerEbook.folio.horizontalLayout' | transloco }}</button>
+          <button type="button" [class.active]="settings().writingMode === 'vertical-rl'" (click)="setWritingMode('vertical-rl')">{{ 'readerEbook.folio.verticalLayout' | transloco }}</button>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>{{ 'readerEbook.folio.pageTurnDirection' | transloco }}</legend>
+        <div class="folio-segmented">
+          <button type="button" [class.active]="settings().pageTurnDirection === 'left-to-right'" (click)="setPageTurnDirection('left-to-right')">{{ 'readerCbx.quickSettings.leftToRight' | transloco }}</button>
+          <button type="button" [class.active]="settings().pageTurnDirection === 'right-to-left'" (click)="setPageTurnDirection('right-to-left')">{{ 'readerCbx.quickSettings.rightToLeft' | transloco }}</button>
+        </div>
+        <p class="folio-help">{{ 'readerEbook.folio.pageTurnDirectionHint' | transloco }}</p>
+      </fieldset>
+
+      <fieldset>
+        <legend>{{ 'readerEbook.settingsDialog.readingFlow' | transloco }}</legend>
+        <div class="folio-segmented">
+          <button type="button" [class.active]="settings().flow === 'paginated'" (click)="setFlow('paginated')">{{ 'readerEbook.settingsDialog.paginated' | transloco }}</button>
+          <button type="button" [class.active]="settings().flow === 'scrolled'" (click)="setFlow('scrolled')">{{ 'readerEbook.settingsDialog.scrolled' | transloco }}</button>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>{{ 'readerEbook.settingsDialog.fontFamily' | transloco }}</legend>
+        <div class="folio-font-grid">
+          <button type="button" [class.active]="settings().fontFamily === 'publisher'" (click)="setFontFamily('publisher')"><span>Aa</span>{{ 'readerEbook.metadataDialog.publisher' | transloco }}</button>
+          <button class="folio-font-serif" type="button" [class.active]="settings().fontFamily === 'cjk-serif'" (click)="setFontFamily('cjk-serif')"><span>宋</span>Serif</button>
+          <button class="folio-font-sans" type="button" [class.active]="settings().fontFamily === 'cjk-sans'" (click)="setFontFamily('cjk-sans')"><span>黑</span>Sans</button>
+        </div>
+      </fieldset>
+
+      <label class="folio-range">
+        <span>{{ 'readerEbook.settingsDialog.fontSize' | transloco }} <output>{{ settings().fontSize }}</output></span>
+        <input type="range" min="12" max="32" step="1" [value]="settings().fontSize" (input)="setFontSize($any($event.target).valueAsNumber)">
+      </label>
+
+      <label class="folio-range">
+        <span>{{ 'readerEbook.folio.fontWeight' | transloco }} <output>{{ settings().fontWeight }}</output></span>
+        <input type="range" min="300" max="800" step="100" [value]="settings().fontWeight" (input)="setFontWeight($any($event.target).valueAsNumber)">
+      </label>
+
+      <label class="folio-range">
+        <span>{{ 'readerEbook.settingsDialog.lineHeight' | transloco }} <output>{{ settings().lineHeight }}</output></span>
+        <input type="range" min="1.1" max="2.6" step="0.1" [value]="settings().lineHeight" (input)="setLineHeight($any($event.target).valueAsNumber)">
+      </label>
+
+      <label class="folio-range">
+        <span>{{ 'readerEbook.settingsDialog.columnGap' | transloco }} <output>{{ settings().columnGap }}%</output></span>
+        <input type="range" min="2" max="18" step="1" [value]="settings().columnGap" (input)="setColumnGap($any($event.target).valueAsNumber)">
+      </label>
+
+      <fieldset>
+        <legend>{{ 'readerEbook.folio.textAlignment' | transloco }}</legend>
+        <div class="folio-segmented folio-segmented-three">
+          <button type="button" [class.active]="settings().textAlign === 'publisher'" (click)="setTextAlign('publisher')">{{ 'readerCbx.quickSettings.automatic' | transloco }}</button>
+          <button type="button" [class.active]="settings().textAlign === 'start'" (click)="setTextAlign('start')">{{ 'readerEbook.folio.alignStart' | transloco }}</button>
+          <button type="button" [class.active]="settings().textAlign === 'justify'" (click)="setTextAlign('justify')">{{ 'readerEbook.folio.alignJustify' | transloco }}</button>
+        </div>
+      </fieldset>
+
+      <label class="folio-range">
+        <span>{{ 'readerEbook.folio.paragraphSpacing' | transloco }} <output>{{ settings().paragraphSpacing }}</output></span>
+        <input type="range" min="0" max="2" step="0.1" [value]="settings().paragraphSpacing" (input)="setParagraphSpacing($any($event.target).valueAsNumber)">
+      </label>
+
+      <label class="folio-range">
+        <span>{{ 'readerEbook.folio.textIndent' | transloco }} <output>{{ settings().textIndent }}</output></span>
+        <input type="range" min="0" max="4" step="0.25" [value]="settings().textIndent" (input)="setTextIndent($any($event.target).valueAsNumber)">
+      </label>
+
+      <label class="folio-range">
+        <span>{{ 'readerEbook.folio.letterSpacing' | transloco }} <output>{{ settings().letterSpacing }}</output></span>
+        <input type="range" min="-0.1" max="0.5" step="0.025" [value]="settings().letterSpacing" (input)="setLetterSpacing($any($event.target).valueAsNumber)">
+      </label>
+
+      <label class="folio-range">
+        <span>{{ 'readerEbook.folio.wordSpacing' | transloco }} <output>{{ settings().wordSpacing }}</output></span>
+        <input type="range" min="-0.1" max="1" step="0.05" [value]="settings().wordSpacing" (input)="setWordSpacing($any($event.target).valueAsNumber)">
+      </label>
+
+      <label class="folio-range">
+        <span>{{ 'readerEbook.folio.pageMargin' | transloco }} <output>{{ settings().pageMargin }}px</output></span>
+        <input type="range" min="8" max="96" step="4" [value]="settings().pageMargin" (input)="setPageMargin($any($event.target).valueAsNumber)">
+      </label>
+
+      <label class="folio-range">
+        <span>{{ 'readerEbook.settingsDialog.maxColumns' | transloco }} <output>{{ settings().maxColumnCount }}</output></span>
+        <input type="range" min="1" max="4" step="1" [value]="settings().maxColumnCount" (input)="setMaxColumnCount($any($event.target).valueAsNumber)">
+      </label>
+
+      <label class="folio-toggle">
+        <span class="folio-toggle-copy">
+          <strong>{{ 'readerEbook.folio.hyphenation' | transloco }}</strong>
+          <small>{{ 'readerEbook.folio.hyphenationHint' | transloco }}</small>
+        </span>
+        <input type="checkbox" [checked]="settings().hyphenate" (change)="setHyphenate($any($event.target).checked)" [attr.aria-label]="'readerEbook.folio.hyphenation' | transloco">
+        <span class="folio-switch" aria-hidden="true"></span>
+      </label>
+
+      <fieldset>
+        <legend>{{ 'readerEbook.settingsDialog.themeTab' | transloco }}</legend>
+        <div class="folio-themes">
+          <button class="folio-theme folio-theme-paper" type="button" [class.active]="settings().theme === 'paper'" (click)="setTheme('paper')" aria-label="Paper"></button>
+          <button class="folio-theme folio-theme-sepia" type="button" [class.active]="settings().theme === 'sepia'" (click)="setTheme('sepia')" aria-label="Sepia"></button>
+          <button class="folio-theme folio-theme-night" type="button" [class.active]="settings().theme === 'night'" (click)="setTheme('night')" aria-label="Night"></button>
+        </div>
+      </fieldset>
+    </div>
+  </aside>
+
+  @if (selection()) {
+    <div class="folio-selection-tools" [style.left.px]="selection()!.position.x" [style.top.px]="selection()!.position.y">
+      <button type="button" (click)="createHighlight()"><svg appIcon="highlighter"></svg><span>{{ 'readerEbook.selectionPopup.annotate' | transloco }}</span></button>
+      <button type="button" (click)="showNoteEditor()"><svg appIcon="notebook-pen"></svg><span>{{ 'readerEbook.selectionPopup.addNote' | transloco }}</span></button>
+      <button type="button" (click)="copySelection()"><svg appIcon="copy"></svg><span>{{ 'readerEbook.selectionPopup.copyText' | transloco }}</span></button>
+      <button type="button" (click)="dismissSelection()"><svg appIcon="x"></svg></button>
+    </div>
+  }
+
+  @if (noteEditorVisible() && selection()) {
+    <div class="folio-note-editor">
+      <strong>“{{ selection()!.text }}”</strong>
+      <textarea #noteInput rows="5" [placeholder]="'readerEbook.noteDialog.notePlaceholder' | transloco"></textarea>
+      <div>
+        <button type="button" (click)="noteEditorVisible.set(false)">{{ 'common.cancel' | transloco }}</button>
+        <button type="button" (click)="saveNote(noteInput.value)">{{ 'common.save' | transloco }}</button>
+      </div>
+    </div>
+  }
+
+  @if (settingsVisible() || libraryVisible() || noteEditorVisible()) {
+    <button class="folio-scrim" type="button" (click)="closePanels()" [attr.aria-label]="'common.close' | transloco"></button>
+  }
+</main>
