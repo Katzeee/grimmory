@@ -3923,6 +3923,33 @@
     "reader": {
       "loadingBook": "正在加载书籍..."
     },
+    "folio": {
+      "noChapters": "暂无目录",
+      "fontWeight": "字重",
+      "textAlignment": "文本对齐",
+      "alignStart": "起始方向",
+      "alignJustify": "两端对齐",
+      "paragraphSpacing": "段落间距",
+      "textIndent": "首行缩进",
+      "letterSpacing": "字间距",
+      "wordSpacing": "词间距",
+      "pageMargin": "页边距",
+      "historyBack": "返回上一阅读位置",
+      "historyForward": "前往下一阅读位置",
+      "horizontalLayout": "横排",
+      "verticalLayout": "竖排",
+      "pageTurnDirection": "翻页方向",
+      "pageTurnDirectionHint": "决定点击或滑动哪一侧进入下一页；文字方向请在“布局”中设置。",
+      "hyphenation": "自动断词（连字符）",
+      "hyphenationHint": "用于英文等语言在行尾断开长单词；中文、日文和竖排通常无需开启。",
+      "bookInformation": "书籍信息",
+      "chapterPage": "本章 {{current}} / {{total}}",
+      "currentLocation": "当前位置",
+      "generatedLocations": "阅读位置总数",
+      "readingInformation": "阅读信息",
+      "format": "格式",
+      "metadataSource": "元数据来源"
+    },
     "metadataDialog": {
       "title": "书籍信息",
       "basicInformation": "基本信息",

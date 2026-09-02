@@ -9,6 +9,7 @@ import {UserStatsGuard} from './core/security/guards/user-stats.guard';
 import {LoginGuard} from './shared/components/setup/login.guard';
 import {SetupGuard} from './shared/components/setup/setup.guard';
 import {SetupRedirectGuard} from './shared/components/setup/setup-redirect.guard';
+import {FolioReaderComponent} from './features/readers/folio/folio-reader.component';
 
 describe('app routes', () => {
   it('defines the setup and auth entry routes', () => {
@@ -58,9 +59,12 @@ describe('app routes', () => {
     expect(typeof children.find(route => route.path === 'book/:bookId')?.loadComponent).toBe('function');
   });
 
-  it('defines the dedicated reader routes outside the shell', () => {
+  it('routes ebooks through Folio and keeps the remaining readers outside the shell', async () => {
+    const ebookRoute = routes.find(route => route.path === 'ebook-reader/book/:bookId');
+
     expect(routes.find(route => route.path === 'pdf-reader/book/:bookId')?.canActivate).toEqual([AuthGuard]);
-    expect(routes.find(route => route.path === 'ebook-reader/book/:bookId')?.canActivate).toEqual([AuthGuard]);
+    expect(ebookRoute?.canActivate).toEqual([AuthGuard]);
+    expect(await ebookRoute?.loadComponent?.()).toBe(FolioReaderComponent);
     expect(routes.find(route => route.path === 'cbx-reader/book/:bookId')?.canActivate).toEqual([AuthGuard]);
     expect(routes.find(route => route.path === 'audiobook-player/book/:bookId')?.canActivate).toEqual([AuthGuard]);
   });

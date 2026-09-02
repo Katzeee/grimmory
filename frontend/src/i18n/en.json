@@ -3940,6 +3940,33 @@
     "reader": {
       "loadingBook": "Loading book..."
     },
+    "folio": {
+      "noChapters": "No chapters",
+      "fontWeight": "Font Weight",
+      "textAlignment": "Text Alignment",
+      "alignStart": "Start",
+      "alignJustify": "Justify",
+      "paragraphSpacing": "Paragraph Spacing",
+      "textIndent": "First-line Indent",
+      "letterSpacing": "Letter Spacing",
+      "wordSpacing": "Word Spacing",
+      "pageMargin": "Page Margin",
+      "historyBack": "Back in reading history",
+      "historyForward": "Forward in reading history",
+      "horizontalLayout": "Horizontal",
+      "verticalLayout": "Vertical",
+      "pageTurnDirection": "Page-turn Direction",
+      "pageTurnDirectionHint": "Controls which side or swipe advances the page. Change text direction under Layout.",
+      "hyphenation": "Automatic word breaks (hyphens)",
+      "hyphenationHint": "Breaks long words at line endings in languages such as English. It is usually unnecessary for Chinese, Japanese, or vertical text.",
+      "bookInformation": "Book information",
+      "chapterPage": "Chapter {{current}} / {{total}}",
+      "currentLocation": "Current location",
+      "generatedLocations": "Total reading locations",
+      "readingInformation": "Reading information",
+      "format": "Format",
+      "metadataSource": "Metadata source"
+    },
     "metadataDialog": {
       "title": "Book Information",
       "basicInformation": "Basic Information",
