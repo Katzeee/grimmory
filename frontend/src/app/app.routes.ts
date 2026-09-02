@@ -66,7 +66,7 @@ export const routes: Routes = [
   },
   {
     path: 'ebook-reader/book/:bookId',
-    loadComponent: () => import('./features/readers/ebook-reader/ebook-reader.component').then(m => m.EbookReaderComponent),
+    loadComponent: () => import('./features/readers/folio/folio-reader.component').then(m => m.FolioReaderComponent),
     canActivate: [AuthGuard]
   },
   {

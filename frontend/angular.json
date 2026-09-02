@@ -43,6 +43,11 @@
               },
               {
                 "glob": "**/*",
+                "input": "libs/folio-engine",
+                "output": "/assets/folio-engine/"
+              },
+              {
+                "glob": "**/*",
                 "input": "node_modules/@embedpdf/pdfium/dist/",
                 "output": "/assets/pdfium/"
               },
