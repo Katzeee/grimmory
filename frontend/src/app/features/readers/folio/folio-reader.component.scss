@@ -921,6 +921,8 @@ legend,
 .folio-selection-tools {
   position: fixed;
   z-index: 60;
+  top: var(--folio-selection-y);
+  left: var(--folio-selection-x);
   display: flex;
   gap: 0.2rem;
   padding: 0.35rem;
@@ -1168,7 +1170,7 @@ legend,
   .folio-selection-tools {
     inset: auto max(0.65rem, env(safe-area-inset-right)) calc(5rem + env(safe-area-inset-bottom)) max(0.65rem, env(safe-area-inset-left));
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr)) 2.75rem;
     transform: none;
 
     button {
