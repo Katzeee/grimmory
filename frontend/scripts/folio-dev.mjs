@@ -108,7 +108,7 @@ async function handleRequest(request, response) {
     response.writeHead(200, {
       'content-type': 'application/epub+zip',
       'content-length': bookBytes.length,
-      'content-disposition': `inline; filename="${fileName.replaceAll('"', '')}"`,
+      'content-disposition': `inline; filename="folio-test.epub"; filename*=UTF-8''${encodeURIComponent(fileName)}`,
     });
     response.end(bookBytes);
     return;
@@ -244,7 +244,7 @@ function tokenResponse() {
 
 function setCorsHeaders(response) {
   response.setHeader('access-control-allow-origin', '*');
-  response.setHeader('access-control-allow-headers', 'authorization, content-type');
+  response.setHeader('access-control-allow-headers', 'authorization, content-type, cache-control, if-modified-since');
   response.setHeader('access-control-allow-methods', 'DELETE, GET, HEAD, OPTIONS, POST, PUT');
 }
 
