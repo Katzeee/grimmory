@@ -118,6 +118,7 @@ export class FolioViewService {
   private file: File | null = null;
   private rendererCleanup: (() => void) | null = null;
   private selectionTimer: ReturnType<typeof setTimeout> | null = null;
+  private selectionVersion = 0;
 
   readonly events$ = this.eventSubject.asObservable();
 
@@ -164,6 +165,7 @@ export class FolioViewService {
 
   async reflow(settings: FolioSettings): Promise<void> {
     if (!this.view || !this.file) return;
+    this.clearSelection();
     const target = this.view.lastLocation?.cfi ?? 0;
     this.clearDocumentListeners();
     this.clearRendererListener();
@@ -175,26 +177,32 @@ export class FolioViewService {
   }
 
   previous(): void {
+    this.clearSelection();
     void this.view?.prev();
   }
 
   next(): void {
+    this.clearSelection();
     void this.view?.next();
   }
 
   goToFraction(fraction: number): void {
+    this.clearSelection();
     void this.view?.goToFraction(Math.max(0, Math.min(1, fraction)));
   }
 
   goTo(target: string): void {
+    this.clearSelection();
     void this.view?.goTo(target);
   }
 
   historyBack(): void {
+    this.clearSelection();
     this.view?.history?.back();
   }
 
   historyForward(): void {
+    this.clearSelection();
     this.view?.history?.forward();
   }
 
@@ -273,7 +281,9 @@ export class FolioViewService {
   }
 
   clearSelection(): void {
-    this.view?.deselect();
+    this.invalidatePendingSelection();
+    if (this.view?.renderer) this.view.deselect();
+    this.eventSubject.next({type: 'selection-cleared'});
   }
 
   destroy(): void {
@@ -319,6 +329,7 @@ export class FolioViewService {
   };
 
   private readonly handleRelocate = (event: Event): void => {
+    this.clearSelection();
     this.eventSubject.next({
       type: 'relocate',
       detail: (event as CustomEvent<FolioRelocateDetail>).detail,
@@ -436,8 +447,10 @@ export class FolioViewService {
 
   private emitSelection(doc: Document, index: number): void {
     if (this.selectionTimer) clearTimeout(this.selectionTimer);
+    const selectionVersion = this.selectionVersion;
     this.selectionTimer = setTimeout(() => {
       this.selectionTimer = null;
+      if (selectionVersion !== this.selectionVersion) return;
       const selection = doc.defaultView?.getSelection();
       if (!selection || selection.isCollapsed || selection.rangeCount === 0) return;
       const range = selection.getRangeAt(0);
@@ -480,9 +493,14 @@ export class FolioViewService {
   }
 
   private clearDocumentListeners(): void {
+    this.invalidatePendingSelection();
+    for (const cleanup of this.documentCleanups.splice(0)) cleanup();
+  }
+
+  private invalidatePendingSelection(): void {
+    this.selectionVersion++;
     if (this.selectionTimer) clearTimeout(this.selectionTimer);
     this.selectionTimer = null;
-    for (const cleanup of this.documentCleanups.splice(0)) cleanup();
   }
 
   private attachRendererListener(): void {

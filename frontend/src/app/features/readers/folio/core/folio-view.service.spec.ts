@@ -118,6 +118,42 @@ describe('FolioViewService', () => {
     document.body.replaceChildren();
   });
 
+  it('invalidates a pending selection when a page turn starts', async () => {
+    const service = new FolioViewService();
+    const access = service as unknown as FolioViewTestAccess;
+    const view = Object.assign(document.createElement('div'), {
+      renderer: Object.assign(new EventTarget(), {setAttribute: vi.fn(), setStyles: vi.fn()}),
+      deselect: vi.fn(() => window.getSelection()?.removeAllRanges()),
+      next: vi.fn(),
+      getCFI: vi.fn(() => 'epubcfi(/6/4)'),
+    });
+    access.view = view;
+
+    const paragraph = document.createElement('p');
+    paragraph.textContent = 'Selected passage';
+    document.body.replaceChildren(paragraph);
+    const range = document.createRange();
+    range.selectNodeContents(paragraph);
+    window.getSelection()?.removeAllRanges();
+    window.getSelection()?.addRange(range);
+
+    const events: {type: string}[] = [];
+    const subscription = service.events$.subscribe(event => events.push(event));
+    access.attachDocumentListeners(document, 0);
+    document.dispatchEvent(new Event('selectionchange'));
+    service.next();
+    await new Promise(resolve => setTimeout(resolve, 20));
+
+    expect(view.deselect).toHaveBeenCalledOnce();
+    expect(view.next).toHaveBeenCalledOnce();
+    expect(events.some(event => event.type === 'selection')).toBe(false);
+    expect(events.some(event => event.type === 'selection-cleared')).toBe(true);
+
+    subscription.unsubscribe();
+    access.clearDocumentListeners();
+    document.body.replaceChildren();
+  });
+
   it('uses EPUB document clicks only to toggle the reader chrome', () => {
     const service = new FolioViewService();
     const access = service as unknown as FolioViewTestAccess;

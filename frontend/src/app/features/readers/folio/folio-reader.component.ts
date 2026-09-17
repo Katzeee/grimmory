@@ -67,6 +67,10 @@ export class FolioReaderComponent implements AfterViewInit {
   readonly selectionMenuVisible = signal(false);
   readonly noteEditorVisible = signal(false);
   readonly bookDetailsVisible = signal(false);
+  readonly showSelectionMenu = computed(() =>
+    this.selection() !== null && this.selectionMenuVisible() &&
+    !this.settingsVisible() && !this.libraryVisible() && !this.noteEditorVisible() && !this.loading(),
+  );
   readonly settings = this.settingsStore.state;
   readonly progressDirection = computed(() => getProgressDirection(this.settings().pageTurnDirection));
   readonly bookTitle = computed(() => this.book()?.metadata?.title || this.book()?.fileName || '');
@@ -139,36 +143,21 @@ export class FolioReaderComponent implements AfterViewInit {
   }
 
   toggleSettings(): void {
-    this.dismissSelection();
-    this.libraryVisible.set(false);
-    this.bookDetailsVisible.set(false);
-    this.settingsVisible.update(value => !value);
-    this.chromeVisible.set(true);
+    this.setPanel(this.settingsVisible() ? null : 'settings');
   }
 
   toggleLibrary(tab: FolioLibraryTab = this.libraryTab()): void {
-    this.dismissSelection();
-    this.settingsVisible.set(false);
     this.libraryTab.set(tab);
-    if (this.libraryVisible()) this.bookDetailsVisible.set(false);
-    this.libraryVisible.update(value => !value);
-    this.chromeVisible.set(true);
+    this.setPanel(this.libraryVisible() ? null : 'library');
   }
 
   openLibrary(tab: FolioLibraryTab): void {
-    this.dismissSelection();
-    this.settingsVisible.set(false);
-    this.bookDetailsVisible.set(false);
     this.libraryTab.set(tab);
-    this.libraryVisible.set(true);
-    this.chromeVisible.set(true);
+    this.setPanel('library');
   }
 
   closePanels(): void {
-    this.settingsVisible.set(false);
-    this.libraryVisible.set(false);
-    this.noteEditorVisible.set(false);
-    this.bookDetailsVisible.set(false);
+    this.setPanel(null);
   }
 
   openBookDetails(): void {
@@ -180,7 +169,6 @@ export class FolioReaderComponent implements AfterViewInit {
   }
 
   navigateTo(target: string): void {
-    this.dismissSelection();
     this.folioView.goTo(target);
     this.libraryVisible.set(false);
   }
@@ -258,7 +246,6 @@ export class FolioReaderComponent implements AfterViewInit {
   }
 
   seekTo(percent: number): void {
-    this.dismissSelection();
     this.folioView.goToFraction(percent / 100);
   }
 
@@ -381,7 +368,6 @@ export class FolioReaderComponent implements AfterViewInit {
   }
 
   private handleRelocate(detail: FolioRelocateDetail): void {
-    if (this.selection()) this.dismissSelection();
     const fraction = Math.max(0, Math.min(1, detail.fraction ?? 0));
     this.progress.set(Math.round(fraction * 1000) / 10);
     this.chapter.set(detail.tocItem?.label ?? detail.pageItem?.label ?? '');
@@ -409,15 +395,21 @@ export class FolioReaderComponent implements AfterViewInit {
         this.dismissSelection();
         return;
       }
-      this.settingsVisible.set(false);
-      this.chromeVisible.set(true);
+      this.setPanel(null);
     }
   }
 
   private turn(turn: FolioTurn): void {
-    this.dismissSelection();
     if (turn === 'next') this.folioView.next();
     else this.folioView.previous();
+  }
+
+  private setPanel(panel: 'settings' | 'library' | null): void {
+    this.dismissSelection();
+    this.settingsVisible.set(panel === 'settings');
+    this.libraryVisible.set(panel === 'library');
+    this.bookDetailsVisible.set(false);
+    this.chromeVisible.set(true);
   }
 
   private clearSelectionState(): void {

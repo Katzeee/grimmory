@@ -460,7 +460,7 @@
     </div>
   </aside>
 
-  @if (selection() && selectionMenuVisible() && !noteEditorVisible()) {
+  @if (showSelectionMenu()) {
     <div class="folio-selection-tools" [style.left.px]="selection()!.position.x" [style.top.px]="selection()!.position.y">
       <button type="button" (click)="copySelection()" [attr.aria-label]="'readerEbook.selectionPopup.copyText' | transloco"><svg appIcon="copy"></svg><span>{{ 'readerEbook.selectionPopup.copyText' | transloco }}</span></button>
       <button type="button" (click)="createHighlight()" [attr.aria-label]="'readerEbook.selectionPopup.annotate' | transloco"><svg appIcon="highlighter"></svg><span>{{ 'readerEbook.selectionPopup.annotate' | transloco }}</span></button>
