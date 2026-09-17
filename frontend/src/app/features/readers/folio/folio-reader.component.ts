@@ -139,6 +139,7 @@ export class FolioReaderComponent implements AfterViewInit {
   }
 
   toggleSettings(): void {
+    this.dismissSelection();
     this.libraryVisible.set(false);
     this.bookDetailsVisible.set(false);
     this.settingsVisible.update(value => !value);
@@ -146,6 +147,7 @@ export class FolioReaderComponent implements AfterViewInit {
   }
 
   toggleLibrary(tab: FolioLibraryTab = this.libraryTab()): void {
+    this.dismissSelection();
     this.settingsVisible.set(false);
     this.libraryTab.set(tab);
     if (this.libraryVisible()) this.bookDetailsVisible.set(false);
@@ -154,6 +156,7 @@ export class FolioReaderComponent implements AfterViewInit {
   }
 
   openLibrary(tab: FolioLibraryTab): void {
+    this.dismissSelection();
     this.settingsVisible.set(false);
     this.bookDetailsVisible.set(false);
     this.libraryTab.set(tab);
@@ -402,6 +405,10 @@ export class FolioReaderComponent implements AfterViewInit {
     else if (key === 'ArrowRight' || key === 'PageDown') this.turnFromSide('right');
     else if (key === ' ') this.turn('next');
     else if (key === 'Escape') {
+      if (this.selection()) {
+        this.dismissSelection();
+        return;
+      }
       this.settingsVisible.set(false);
       this.chromeVisible.set(true);
     }

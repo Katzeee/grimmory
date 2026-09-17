@@ -8,6 +8,10 @@ interface FolioReaderTestAccess {
   selection: WritableSignal<FolioSelectionDetail | null>;
   selectionMenuVisible: WritableSignal<boolean>;
   noteEditorVisible: WritableSignal<boolean>;
+  libraryVisible: WritableSignal<boolean>;
+  bookDetailsVisible: WritableSignal<boolean>;
+  settingsVisible: WritableSignal<boolean>;
+  chromeVisible: WritableSignal<boolean>;
   settings: WritableSignal<FolioSettings>;
   folioView: {
     clearSelection(): void;
@@ -15,6 +19,7 @@ interface FolioReaderTestAccess {
     previous(): void;
   };
   turnFromSide(side: 'left' | 'right'): void;
+  toggleSettings(): void;
 }
 
 describe('FolioReaderComponent navigation', () => {
@@ -23,7 +28,7 @@ describe('FolioReaderComponent navigation', () => {
     component.selection = signal({
       text: 'Selected passage',
       cfi: 'epubcfi(/6/4,/2:0,/2:8)',
-      position: {x: 120, y: 88, vertical: false},
+      position: {x: 120, y: 88},
     });
     component.selectionMenuVisible = signal(true);
     component.noteEditorVisible = signal(true);
@@ -41,5 +46,28 @@ describe('FolioReaderComponent navigation', () => {
     expect(component.noteEditorVisible()).toBe(false);
     expect(component.folioView.clearSelection).toHaveBeenCalledOnce();
     expect(component.folioView.next).toHaveBeenCalledOnce();
+  });
+
+  it('dismisses the selection before opening settings', () => {
+    const component = Object.create(FolioReaderComponent.prototype) as FolioReaderTestAccess;
+    component.selection = signal({
+      text: 'Selected passage',
+      cfi: 'epubcfi(/6/4,/2:0,/2:8)',
+      position: {x: 120, y: 88},
+    });
+    component.selectionMenuVisible = signal(true);
+    component.noteEditorVisible = signal(false);
+    component.libraryVisible = signal(false);
+    component.bookDetailsVisible = signal(false);
+    component.settingsVisible = signal(false);
+    component.chromeVisible = signal(false);
+    component.folioView = {clearSelection: vi.fn(), next: vi.fn(), previous: vi.fn()};
+
+    component.toggleSettings();
+
+    expect(component.selection()).toBeNull();
+    expect(component.selectionMenuVisible()).toBe(false);
+    expect(component.settingsVisible()).toBe(true);
+    expect(component.folioView.clearSelection).toHaveBeenCalledOnce();
   });
 });
