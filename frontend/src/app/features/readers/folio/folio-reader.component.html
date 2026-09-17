@@ -461,7 +461,7 @@
   </aside>
 
   @if (selection()) {
-    <div class="folio-selection-tools" [style.left.px]="selection()!.position.x" [style.top.px]="selection()!.position.y">
+    <div class="folio-selection-tools" [style.--folio-selection-x]="selection()!.position.x + 'px'" [style.--folio-selection-y]="selection()!.position.y + 'px'">
       <button type="button" (click)="createHighlight()"><svg appIcon="highlighter"></svg><span>{{ 'readerEbook.selectionPopup.annotate' | transloco }}</span></button>
       <button type="button" (click)="showNoteEditor()"><svg appIcon="notebook-pen"></svg><span>{{ 'readerEbook.selectionPopup.addNote' | transloco }}</span></button>
       <button type="button" (click)="copySelection()"><svg appIcon="copy"></svg><span>{{ 'readerEbook.selectionPopup.copyText' | transloco }}</span></button>
