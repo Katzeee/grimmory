@@ -41,15 +41,13 @@ describe('FolioViewService', () => {
     const subscription = service.events$.subscribe(event => events.push(event));
     access.attachDocumentListeners(document, 3);
     document.dispatchEvent(new Event('selectionchange'));
-    await new Promise(resolve => setTimeout(resolve, 20));
-
-    expect(view.getCFI).toHaveBeenCalledWith(3, range);
+    await vi.waitFor(() => expect(view.getCFI).toHaveBeenCalledWith(3, range));
     expect(events).toContainEqual({
       type: 'selection',
       detail: {
         text: 'Selected',
         cfi: 'epubcfi(/6/4,/2:0,/2:8)',
-        position: {x: 120, y: 88},
+        position: {x: 120, y: 88, vertical: false},
       },
     });
 
@@ -76,6 +74,48 @@ describe('FolioViewService', () => {
 
     subscription.unsubscribe();
     access.clearDocumentListeners();
+  });
+
+  it('waits for touch release before showing selection tools', async () => {
+    const service = new FolioViewService();
+    const access = service as unknown as FolioViewTestAccess;
+    const view = document.createElement('div') as unknown as FolioViewTestAccess['view'];
+    view.getCFI = vi.fn(() => 'epubcfi(/6/4)');
+    access.view = view;
+
+    const paragraph = document.createElement('p');
+    paragraph.textContent = 'Selected passage';
+    document.body.replaceChildren(paragraph);
+    const range = document.createRange();
+    range.setStart(paragraph.firstChild!, 0);
+    range.setEnd(paragraph.firstChild!, 8);
+    Object.defineProperty(range, 'getBoundingClientRect', {
+      value: () => ({left: 20, top: 100, width: 80, height: 20, right: 100, bottom: 120}),
+    });
+    const selection = window.getSelection()!;
+    selection.removeAllRanges();
+
+    const events: {type: string}[] = [];
+    const subscription = service.events$.subscribe(event => events.push(event));
+    access.attachDocumentListeners(document, 0);
+    const touchstart = new Event('touchstart');
+    Object.defineProperty(touchstart, 'touches', {value: [{clientX: 60, clientY: 110}]});
+    document.dispatchEvent(touchstart);
+    selection.addRange(range);
+    document.dispatchEvent(new Event('selectionchange'));
+    await new Promise(resolve => setTimeout(resolve, 20));
+    expect(events.some(event => event.type === 'selection')).toBe(false);
+
+    const touchend = new Event('touchend');
+    Object.defineProperty(touchend, 'changedTouches', {value: [{clientX: 60, clientY: 110}]});
+    document.dispatchEvent(touchend);
+    await new Promise(resolve => setTimeout(resolve, 20));
+    expect(events.filter(event => event.type === 'selection')).toHaveLength(1);
+
+    subscription.unsubscribe();
+    access.clearDocumentListeners();
+    selection.removeAllRanges();
+    document.body.replaceChildren();
   });
 
   it('uses EPUB document clicks only to toggle the reader chrome', () => {

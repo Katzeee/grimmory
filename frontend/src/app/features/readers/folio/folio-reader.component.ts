@@ -64,6 +64,7 @@ export class FolioReaderComponent implements AfterViewInit {
   readonly libraryVisible = signal(false);
   readonly libraryTab = signal<FolioLibraryTab>('contents');
   readonly selection = signal<FolioSelectionDetail | null>(null);
+  readonly selectionMenuVisible = signal(false);
   readonly noteEditorVisible = signal(false);
   readonly bookDetailsVisible = signal(false);
   readonly settings = this.settingsStore.state;
@@ -100,7 +101,11 @@ export class FolioReaderComponent implements AfterViewInit {
         else if (event.type === 'swipe') this.turnFromSwipe(event.swipe);
         else if (event.type === 'center') this.chromeVisible.update(value => !value);
         else if (event.type === 'key') this.handleKey(event.key);
-        else if (event.type === 'selection') this.selection.set(event.detail);
+        else if (event.type === 'selection') {
+          this.selection.set(event.detail);
+          this.selectionMenuVisible.set(true);
+        }
+        else if (event.type === 'selection-interacting') this.selectionMenuVisible.set(false);
         else if (event.type === 'selection-cleared') this.clearSelectionState();
         else if (event.type === 'annotation') this.openLibrary('notes');
         else if (event.type === 'rendered-page') {
@@ -410,6 +415,7 @@ export class FolioReaderComponent implements AfterViewInit {
 
   private clearSelectionState(): void {
     this.selection.set(null);
+    this.selectionMenuVisible.set(false);
     this.noteEditorVisible.set(false);
   }
 }

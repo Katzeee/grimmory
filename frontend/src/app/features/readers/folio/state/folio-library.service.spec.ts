@@ -153,7 +153,7 @@ describe('FolioLibraryService', () => {
   });
 
   it('persists and removes highlights through Grimmory annotations', async () => {
-    const selection = {text: 'Selected text', cfi: 'epubcfi(/6/10)', position: {x: 10, y: 20}};
+    const selection = {text: 'Selected text', cfi: 'epubcfi(/6/10)', position: {x: 10, y: 20, vertical: false}};
     const annotation = {
       id: 8,
       bookId: 7,
@@ -178,7 +178,7 @@ describe('FolioLibraryService', () => {
   });
 
   it('persists and removes notes through Grimmory book notes', async () => {
-    const selection = {text: 'Selected text', cfi: 'epubcfi(/6/12)', position: {x: 10, y: 20}};
+    const selection = {text: 'Selected text', cfi: 'epubcfi(/6/12)', position: {x: 10, y: 20, vertical: false}};
     const note = {
       id: 9,
       bookId: 7,
