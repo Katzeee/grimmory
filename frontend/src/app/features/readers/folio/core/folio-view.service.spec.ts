@@ -47,7 +47,7 @@ describe('FolioViewService', () => {
       detail: {
         text: 'Selected',
         cfi: 'epubcfi(/6/4,/2:0,/2:8)',
-        position: {x: 120, y: 88, vertical: false},
+        position: {x: 160, y: 88},
       },
     });
 

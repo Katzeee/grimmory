@@ -455,7 +455,6 @@ export class FolioViewService {
       const last = lineRects.at(-1) ?? rangeRect;
       const offsetX = frameRect?.left ?? 0;
       const offsetY = frameRect?.top ?? 0;
-      const vertical = doc.defaultView?.getComputedStyle(doc.body).writingMode.startsWith('vertical') ?? false;
       const mobile = window.innerWidth <= 640 || window.innerHeight <= 640;
       const readingArea = this.view?.closest('.folio-stage')?.getBoundingClientRect() ?? {
         left: 0, right: window.innerWidth, top: 0, bottom: window.innerHeight,
@@ -464,11 +463,10 @@ export class FolioViewService {
         ? placeMobileSelectionMenu({
           first: {left: offsetX + first.left, right: offsetX + first.right, top: offsetY + first.top, bottom: offsetY + first.bottom},
           last: {left: offsetX + last.left, right: offsetX + last.right, top: offsetY + last.top, bottom: offsetY + last.bottom},
-        }, readingArea, vertical)
+        }, readingArea)
         : {
-          x: Math.max(120, Math.min(offsetX + first.left + first.width / 2, window.innerWidth - 120)),
+          x: Math.max(160, Math.min(offsetX + first.left + first.width / 2, window.innerWidth - 160)),
           y: Math.max(72, offsetY + first.top - 12),
-          vertical: false,
         };
       this.eventSubject.next({
         type: 'selection',

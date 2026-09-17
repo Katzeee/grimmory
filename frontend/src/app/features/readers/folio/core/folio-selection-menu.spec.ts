@@ -8,28 +8,28 @@ describe('Folio mobile selection menu placement', () => {
     const nearTop = placeMobileSelectionMenu({
       first: {left: 24, right: 96, top: 66, bottom: 88},
       last: {left: 24, right: 96, top: 66, bottom: 88},
-    }, readingArea, false);
-    expect(nearTop).toEqual({x: 12, y: 96, vertical: false});
+    }, readingArea);
+    expect(nearTop).toEqual({x: 12, y: 96});
 
     const nearBottom = placeMobileSelectionMenu({
       first: {left: 334, right: 382, top: 728, bottom: 751},
       last: {left: 334, right: 382, top: 728, bottom: 751},
-    }, readingArea, false);
-    expect(nearBottom).toEqual({x: 170, y: 664, vertical: false});
+    }, readingArea);
+    expect(nearBottom).toEqual({x: 218, y: 664});
   });
 
-  it('places a compact vertical menu on the side with room', () => {
+  it('uses the same horizontal menu placement for vertical text', () => {
     const onRight = placeMobileSelectionMenu({
       first: {left: 330, right: 352, top: 350, bottom: 405},
       last: {left: 330, right: 352, top: 350, bottom: 405},
-    }, readingArea, true);
-    expect(onRight).toEqual({x: 266, y: 281.5, vertical: true});
+    }, readingArea);
+    expect(onRight).toEqual({x: 218, y: 286});
 
     const onLeft = placeMobileSelectionMenu({
       first: {left: 30, right: 52, top: 350, bottom: 405},
       last: {left: 30, right: 52, top: 350, bottom: 405},
-    }, readingArea, true);
-    expect(onLeft).toEqual({x: 60, y: 281.5, vertical: true});
+    }, readingArea);
+    expect(onLeft).toEqual({x: 12, y: 286});
   });
 
   it('keeps the entire menu inside a narrow phone reading area', () => {
@@ -38,16 +38,10 @@ describe('Folio mobile selection menu placement', () => {
       first: {left: 280, right: 312, top: 460, bottom: 485},
       last: {left: 280, right: 312, top: 460, bottom: 485},
     };
-    const horizontal = placeMobileSelectionMenu(selection, narrowReadingArea, false);
-    expect(horizontal.x).toBeGreaterThanOrEqual(12);
-    expect(horizontal.x + 208).toBeLessThanOrEqual(308);
-    expect(horizontal.y).toBeGreaterThanOrEqual(52);
-    expect(horizontal.y + 56).toBeLessThanOrEqual(488);
-
-    const vertical = placeMobileSelectionMenu(selection, narrowReadingArea, true);
-    expect(vertical.x).toBeGreaterThanOrEqual(12);
-    expect(vertical.x + 56).toBeLessThanOrEqual(308);
-    expect(vertical.y).toBeGreaterThanOrEqual(52);
-    expect(vertical.y + 192).toBeLessThanOrEqual(488);
+    const position = placeMobileSelectionMenu(selection, narrowReadingArea);
+    expect(position.x).toBeGreaterThanOrEqual(12);
+    expect(position.x + 160).toBeLessThanOrEqual(308);
+    expect(position.y).toBeGreaterThanOrEqual(52);
+    expect(position.y + 56).toBeLessThanOrEqual(488);
   });
 });
