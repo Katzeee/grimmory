@@ -1,0 +1,3 @@
+interface:
+  display_name: "Sync Grimmory Upstreams"
+  short_description: "Rebase Grimmory and update the Foliate engine"
