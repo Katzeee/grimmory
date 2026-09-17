@@ -6,6 +6,7 @@ import {DEFAULT_FOLIO_SETTINGS, FolioSettings} from './state/folio-settings';
 
 interface FolioReaderTestAccess {
   selection: WritableSignal<FolioSelectionDetail | null>;
+  selectionMenuVisible: WritableSignal<boolean>;
   noteEditorVisible: WritableSignal<boolean>;
   settings: WritableSignal<FolioSettings>;
   folioView: {
@@ -22,8 +23,9 @@ describe('FolioReaderComponent navigation', () => {
     component.selection = signal({
       text: 'Selected passage',
       cfi: 'epubcfi(/6/4,/2:0,/2:8)',
-      position: {x: 120, y: 88},
+      position: {x: 120, y: 88, vertical: false},
     });
+    component.selectionMenuVisible = signal(true);
     component.noteEditorVisible = signal(true);
     component.settings = signal(DEFAULT_FOLIO_SETTINGS);
     component.folioView = {
@@ -35,6 +37,7 @@ describe('FolioReaderComponent navigation', () => {
     component.turnFromSide('right');
 
     expect(component.selection()).toBeNull();
+    expect(component.selectionMenuVisible()).toBe(false);
     expect(component.noteEditorVisible()).toBe(false);
     expect(component.folioView.clearSelection).toHaveBeenCalledOnce();
     expect(component.folioView.next).toHaveBeenCalledOnce();

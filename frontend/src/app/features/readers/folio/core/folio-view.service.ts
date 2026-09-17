@@ -2,6 +2,7 @@ import {Injectable} from '@angular/core';
 import {Subject} from 'rxjs';
 import {FolioSettings} from '../state/folio-settings';
 import {FolioRenderedPage, FolioSwipe, getRenderedPage} from './folio-navigation';
+import {FolioSelectionMenuPosition, placeMobileSelectionMenu} from './folio-selection-menu';
 
 export interface FolioTocItem {
   label: string;
@@ -24,7 +25,7 @@ export interface FolioSearchResult {
 export interface FolioSelectionDetail {
   text: string;
   cfi: string;
-  position: {x: number; y: number};
+  position: FolioSelectionMenuPosition;
 }
 
 export interface FolioRenderableAnnotation {
@@ -52,6 +53,7 @@ type FolioViewEvent =
   | {type: 'center'}
   | {type: 'key'; key: string}
   | {type: 'selection'; detail: FolioSelectionDetail}
+  | {type: 'selection-interacting'}
   | {type: 'selection-cleared'}
   | {type: 'annotation'; cfi: string}
   | {type: 'rendered-page'; detail: FolioRenderedPage | null}
@@ -115,6 +117,7 @@ export class FolioViewService {
   private view: FoliateViewElement | null = null;
   private file: File | null = null;
   private rendererCleanup: (() => void) | null = null;
+  private selectionTimer: ReturnType<typeof setTimeout> | null = null;
 
   readonly events$ = this.eventSubject.asObservable();
 
@@ -346,6 +349,8 @@ export class FolioViewService {
 
   private attachDocumentListeners(doc: Document, index: number): void {
     let touchStart: {x: number; y: number} | null = null;
+    let touchSelecting = false;
+    let ignoreMouseUntil = 0;
 
     const click = (event: MouseEvent): void => {
       const target = event.target as Element | null;
@@ -359,15 +364,20 @@ export class FolioViewService {
     const touchstart = (event: TouchEvent): void => {
       if (event.touches.length !== 1) return;
       touchStart = {x: event.touches[0].clientX, y: event.touches[0].clientY};
+      touchSelecting = true;
+      this.eventSubject.next({type: 'selection-interacting'});
     };
 
     const touchend = (event: TouchEvent): void => {
+      touchSelecting = false;
+      ignoreMouseUntil = Date.now() + 350;
       const selection = doc.defaultView?.getSelection();
       if (selection && !selection.isCollapsed) {
         this.emitSelection(doc, index);
         touchStart = null;
         return;
       }
+      this.eventSubject.next({type: 'selection-cleared'});
       if (!touchStart || event.changedTouches.length !== 1) return;
       const touch = event.changedTouches[0];
       const dx = touch.clientX - touchStart.x;
@@ -377,8 +387,19 @@ export class FolioViewService {
       this.eventSubject.next({type: 'swipe', swipe: dx < 0 ? 'swipe-left' : 'swipe-right'});
     };
 
-    const mouseup = (): void => this.emitSelection(doc, index);
+    const touchcancel = (): void => {
+      touchSelecting = false;
+      touchStart = null;
+      const selection = doc.defaultView?.getSelection();
+      if (selection && !selection.isCollapsed) this.emitSelection(doc, index);
+      else this.eventSubject.next({type: 'selection-cleared'});
+    };
+
+    const mouseup = (): void => {
+      if (Date.now() >= ignoreMouseUntil) this.emitSelection(doc, index);
+    };
     const selectionchange = (): void => {
+      if (touchSelecting) return;
       const selection = doc.defaultView?.getSelection();
       if (!selection || selection.isCollapsed || selection.rangeCount === 0) {
         this.eventSubject.next({type: 'selection-cleared'});
@@ -398,6 +419,7 @@ export class FolioViewService {
     doc.addEventListener('click', click);
     doc.addEventListener('touchstart', touchstart, {passive: true});
     doc.addEventListener('touchend', touchend, {passive: true});
+    doc.addEventListener('touchcancel', touchcancel, {passive: true});
     doc.addEventListener('mouseup', mouseup);
     doc.addEventListener('selectionchange', selectionchange);
     doc.addEventListener('keydown', keydown);
@@ -405,6 +427,7 @@ export class FolioViewService {
       doc.removeEventListener('click', click);
       doc.removeEventListener('touchstart', touchstart);
       doc.removeEventListener('touchend', touchend);
+      doc.removeEventListener('touchcancel', touchcancel);
       doc.removeEventListener('mouseup', mouseup);
       doc.removeEventListener('selectionchange', selectionchange);
       doc.removeEventListener('keydown', keydown);
@@ -412,7 +435,9 @@ export class FolioViewService {
   }
 
   private emitSelection(doc: Document, index: number): void {
-    setTimeout(() => {
+    if (this.selectionTimer) clearTimeout(this.selectionTimer);
+    this.selectionTimer = setTimeout(() => {
+      this.selectionTimer = null;
       const selection = doc.defaultView?.getSelection();
       if (!selection || selection.isCollapsed || selection.rangeCount === 0) return;
       const range = selection.getRangeAt(0);
@@ -423,21 +448,42 @@ export class FolioViewService {
       const frame = doc.defaultView?.frameElement as HTMLIFrameElement | null;
       const frameRect = frame?.getBoundingClientRect();
       const rangeRect = range.getBoundingClientRect();
+      const lineRects = typeof range.getClientRects === 'function'
+        ? Array.from(range.getClientRects()).filter(rect => rect.width > 0 && rect.height > 0)
+        : [];
+      const first = lineRects[0] ?? rangeRect;
+      const last = lineRects.at(-1) ?? rangeRect;
+      const offsetX = frameRect?.left ?? 0;
+      const offsetY = frameRect?.top ?? 0;
+      const vertical = doc.defaultView?.getComputedStyle(doc.body).writingMode.startsWith('vertical') ?? false;
+      const mobile = window.innerWidth <= 640 || window.innerHeight <= 640;
+      const readingArea = this.view?.closest('.folio-stage')?.getBoundingClientRect() ?? {
+        left: 0, right: window.innerWidth, top: 0, bottom: window.innerHeight,
+      };
+      const position = mobile
+        ? placeMobileSelectionMenu({
+          first: {left: offsetX + first.left, right: offsetX + first.right, top: offsetY + first.top, bottom: offsetY + first.bottom},
+          last: {left: offsetX + last.left, right: offsetX + last.right, top: offsetY + last.top, bottom: offsetY + last.bottom},
+        }, readingArea, vertical)
+        : {
+          x: Math.max(120, Math.min(offsetX + first.left + first.width / 2, window.innerWidth - 120)),
+          y: Math.max(72, offsetY + first.top - 12),
+          vertical: false,
+        };
       this.eventSubject.next({
         type: 'selection',
         detail: {
           text,
           cfi,
-          position: {
-            x: Math.max(120, Math.min((frameRect?.left ?? 0) + rangeRect.left + rangeRect.width / 2, window.innerWidth - 120)),
-            y: Math.max(72, (frameRect?.top ?? 0) + rangeRect.top - 12),
-          },
+          position,
         },
       });
     }, 10);
   }
 
   private clearDocumentListeners(): void {
+    if (this.selectionTimer) clearTimeout(this.selectionTimer);
+    this.selectionTimer = null;
     for (const cleanup of this.documentCleanups.splice(0)) cleanup();
   }
 
