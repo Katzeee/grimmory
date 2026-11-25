@@ -93,8 +93,8 @@ interface FoliateViewElement extends HTMLElement {
   clearSearch?(): void;
 }
 
-interface StreamingBookFactoryWindow extends Window {
-  makeStreamingBook?: (
+interface StreamingLoaderModule {
+  makeStreamingBook: (
     bookId: number,
     baseUrl: string,
     bookInfo: EpubBookInfo,
@@ -102,6 +102,8 @@ interface StreamingBookFactoryWindow extends Window {
     bookType?: string
   ) => Promise<object>;
 }
+
+const STREAMING_LOADER_URL = '/assets/foliate/streaming-loader.js';
 
 @Service()
 export class ReaderViewManagerService {
@@ -169,10 +171,7 @@ export class ReaderViewManagerService {
   }
 
   private async openStreamingBook(bookId: number, bookInfo: EpubBookInfo, bookType?: string): Promise<void> {
-    const makeStreamingBook = (window as StreamingBookFactoryWindow).makeStreamingBook;
-    if (!makeStreamingBook) {
-      throw new Error('makeStreamingBook not available - Foliate script may not be loaded');
-    }
+    const {makeStreamingBook} = await import(/* @vite-ignore */ STREAMING_LOADER_URL) as StreamingLoaderModule;
     const baseUrl = this.epubStreamingService.getBaseUrl();
     const authToken = this.epubStreamingService.getAuthToken();
     const book = await makeStreamingBook(bookId, baseUrl, bookInfo, authToken, bookType);

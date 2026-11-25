@@ -39,6 +39,7 @@
               {
                 "glob": "**/*",
                 "input": "libs/foliate-js",
+                "ignore": [".*", ".github/**", "rollup/**", "tests/**", "ui/**", "vendor/pdfjs/**", "*.config.js", "*.html", "*.json", "*.md", "reader.js"],
                 "output": "/assets/foliate/"
               },
               {

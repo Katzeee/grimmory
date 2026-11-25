@@ -114,7 +114,9 @@ describe('ReaderStyleService', () => {
     expect(renderer.setAttribute).toHaveBeenCalledWith('gap', '20%');
     expect(renderer.setAttribute).toHaveBeenCalledWith('max-inline-size', '800px');
     expect(renderer.setAttribute).toHaveBeenCalledWith('max-block-size', '1500px');
-    expect(renderer.setAttribute).toHaveBeenCalledWith('margin', '40px');
+    for (const side of ['top', 'right', 'bottom', 'left']) {
+      expect(renderer.setAttribute).toHaveBeenCalledWith(`margin-${side}`, '40px');
+    }
     expect(renderer.setStyles).toHaveBeenCalledOnce();
 
     service.applyStylesToRenderer(renderer, {
@@ -133,7 +135,9 @@ describe('ReaderStyleService', () => {
       tapToTurnPage: true,
     });
 
-    expect(renderer.removeAttribute).toHaveBeenCalledWith('margin');
+    for (const side of ['top', 'right', 'bottom', 'left']) {
+      expect(renderer.removeAttribute).toHaveBeenCalledWith(`margin-${side}`);
+    }
     expect(() => service.applyStylesToRenderer(null, {
       lineHeight: 1.5,
       justify: true,

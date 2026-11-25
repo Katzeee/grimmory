@@ -191,10 +191,12 @@ export class ReaderStyleService {
       renderer.setStyles(css);
     }
 
-    if (state.flow === 'paginated') {
-      renderer.setAttribute('margin', '40px');
-    } else {
-      renderer.removeAttribute('margin');
+    for (const side of ['top', 'right', 'bottom', 'left']) {
+      if (state.flow === 'paginated') {
+        renderer.setAttribute(`margin-${side}`, '40px');
+      } else {
+        renderer.removeAttribute(`margin-${side}`);
+      }
     }
   }
 }

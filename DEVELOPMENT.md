@@ -51,6 +51,10 @@ inside a project:
 
 ## Development Setup
 
+The EPUB reader engine ([readest/foliate-js](https://github.com/readest/foliate-js)) is a git submodule at
+`frontend/libs/foliate-js`, and every build, including the Docker image, reads it from there. Clone with
+`git clone --recurse-submodules`, or run `git submodule update --init` in an existing checkout.
+
 ### Option 1: Docker Development Stack (Recommended)
 
 The fastest way to get a working environment. No local toolchain required.

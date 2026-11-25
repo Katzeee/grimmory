@@ -37,24 +37,6 @@ export const makeStreamingLoader = (bookId, baseUrl, bookInfo, authToken = null,
     }
   }
 
-  // Build URL with token for browser-initiated requests (fonts, images in CSS)
-  const getDirectFileUrl = (name) => {
-    if (!name) return null
-    const encodedPath = name.split('/').map(encodeURIComponent).join('/')
-    let url = `${baseUrl}/${bookId}/file/${encodedPath}`
-    const params = []
-    if (bookType) {
-      params.push(`bookType=${encodeURIComponent(bookType)}`)
-    }
-    if (authToken) {
-      params.push(`token=${encodeURIComponent(authToken)}`)
-    }
-    if (params.length > 0) {
-      url += '?' + params.join('&')
-    }
-    return url
-  }
-
   /**
    * Load file as text
    */
@@ -107,27 +89,38 @@ export const makeStreamingLoader = (bookId, baseUrl, bookInfo, authToken = null,
     return item?.size ?? 0
   }
 
-  /**
-   * Get direct URL for a file without fetching it.
-   * This allows the browser to fetch resources on-demand (fonts, images).
-   * Note: Uses token in URL since browser-initiated requests can't use headers.
-   * @param {string} name - File path within the EPUB
-   * @returns {string|null} Direct URL to the file
-   */
-  const getDirectUrl = (name) => {
-    if (!name) return null
-    return getDirectFileUrl(name)
-  }
+  // Container entries the EPUB class checks before resolving undeclared images, fonts and media
+  const entries = [
+    'META-INF/container.xml',
+    bookInfo.containerPath,
+    ...bookInfo.manifest.map(item => item.href),
+  ].map(filename => ({filename}))
 
   return {
+    entries,
     loadText,
     loadBlob,
     getSize,
-    getDirectUrl, // For lazy loading of fonts/images in CSS
     // Expose for debugging
     _bookInfo: bookInfo,
     _manifestMap: manifestMap
   }
+}
+
+/**
+ * Creates an EPUB book that loads its resources from the server on-demand.
+ *
+ * @param {number} bookId - Book ID for API requests
+ * @param {string} baseUrl - API base URL for EPUB endpoints
+ * @param {Object} bookInfo - Pre-fetched metadata from /api/v1/epub/{bookId}/info
+ * @param {string} [authToken] - Optional authentication token
+ * @param {string} [bookType] - Optional book type for alternative format (e.g., 'EPUB')
+ * @returns {Promise<EPUB>} Initialized EPUB book object
+ */
+export const makeStreamingBook = async (bookId, baseUrl, bookInfo, authToken = null, bookType = null) => {
+  const loader = makeStreamingLoader(bookId, baseUrl, bookInfo, authToken, bookType)
+  const {EPUB} = await import('./epub.js')
+  return new EPUB(loader).init()
 }
 
 export default makeStreamingLoader
