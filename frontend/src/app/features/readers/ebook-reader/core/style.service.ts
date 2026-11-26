@@ -87,7 +87,8 @@ export class ReaderStyleService {
                   color: ${theme.link || theme.dark.link};
               }
           }
-          aside[epub|type~="footnote"] {
+          /* Sections load as HTML, where epub:type is a plain attribute name */
+          aside[epub|type~="footnote"], aside[epub\\:type~="footnote"] {
               display: none;
           }
       }

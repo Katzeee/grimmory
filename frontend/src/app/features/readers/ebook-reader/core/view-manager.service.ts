@@ -6,6 +6,7 @@ import {ReaderEventService, ViewEvent, TextSelection} from './event.service';
 import {PageInfo, ThemeInfo, PageDecorator} from '../shared/header-footer.util';
 import {EpubStreamingService, EpubBookInfo} from './epub-streaming.service';
 import {ReaderPageDirection, ReaderStateService} from '../state/reader-state.service';
+import {ReaderFootnoteService} from '../features/footnotes/footnote.service';
 
 export type {ViewEvent, TextSelection} from './event.service';
 export type {PageInfo, ThemeInfo} from '../shared/header-footer.util';
@@ -124,6 +125,7 @@ export class ReaderViewManagerService {
   private readonly eventService = inject(ReaderEventService);
   private readonly epubStreamingService = inject(EpubStreamingService);
   private readonly readerStateService = inject(ReaderStateService);
+  private readonly footnoteService = inject(ReaderFootnoteService);
   private view: FoliateViewElement | null = null;
   private declaredBookDir: string | undefined;
   private readonly verticalWritingState = signal(false);
@@ -146,6 +148,12 @@ export class ReaderViewManagerService {
     this.view.style.height = '100%';
     this.view.style.display = 'block';
     container.appendChild(this.view);
+
+    this.footnoteService.load().catch((error: unknown) => console.error('Failed to load footnote support', error));
+    this.view.addEventListener('link', event => {
+      const view = this.view;
+      this.footnoteService.handleLink(event, view?.book, href => void view?.goTo(href));
+    });
 
     this.eventService.initialize(this.view, {
       prev: () => this.prev(),

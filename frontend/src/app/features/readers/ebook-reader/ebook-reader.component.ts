@@ -37,6 +37,8 @@ import {WakeLockService} from '../../../shared/service/wake-lock.service';
 import {ViewEvent} from './core/view-manager.service';
 import {PageTitleService} from '../../../shared/service/page-title.service';
 import {isTouchScreen, setupReaderEdges} from '../shared/reader-edges.util';
+import {ReaderFootnoteService} from './features/footnotes/footnote.service';
+import {ReaderFootnotePopupComponent} from './features/footnotes/footnote-popup.component';
 
 interface PendingInitialChapterRestore {
   href: string;
@@ -58,6 +60,7 @@ interface PendingInitialChapterRestore {
     TextSelectionPopupComponent,
     ReaderNoteDialogComponent,
     EbookShortcutsHelpComponent,
+    ReaderFootnotePopupComponent,
     TranslocoPipe
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
@@ -74,7 +77,8 @@ interface PendingInitialChapterRestore {
     ReaderSidebarService,
     ReaderLeftSidebarService,
     ReaderHeaderService,
-    ReaderNoteService
+    ReaderNoteService,
+    ReaderFootnoteService
   ],
   templateUrl: './ebook-reader.component.html',
   styleUrls: ['./ebook-reader.component.scss'],
@@ -99,6 +103,7 @@ export class EbookReaderComponent implements OnInit {
   private readonly wakeLockService = inject(WakeLockService);
   private readonly messageService = inject(MessageService);
   private readonly pageTitle = inject(PageTitleService);
+  private readonly footnoteService = inject(ReaderFootnoteService);
 
   public sidebarService = inject(ReaderSidebarService);
   public leftSidebarService = inject(ReaderLeftSidebarService);
@@ -335,6 +340,7 @@ export class EbookReaderComponent implements OnInit {
             this.updateSectionFractions();
             break;
           case 'relocate':
+            this.footnoteService.close();
             this.requestAutoFullscreen();
             if (this.handlePendingInitialChapterRestore(event.detail)) {
               break;

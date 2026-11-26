@@ -1,0 +1,37 @@
+.footnote-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: none;
+
+  &.open {
+    display: block;
+  }
+}
+
+.footnote-popup {
+  position: fixed;
+  left: 50%;
+  bottom: calc(24px + var(--safe-edge-bottom, 0px));
+  z-index: 41;
+  padding: 16px 20px;
+  box-sizing: content-box;
+  border: 1px solid var(--reader-chrome-border);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 25%);
+  transform: translateX(-50%);
+
+  // Hidden by visibility, not display, so the note can be laid out before it shows.
+  visibility: hidden;
+
+  &.open {
+    visibility: visible;
+  }
+}
+
+// The reader's global style places every foliate-view absolutely over its positioned ancestor.
+.footnote-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}

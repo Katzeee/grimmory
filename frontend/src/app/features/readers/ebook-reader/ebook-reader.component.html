@@ -48,6 +48,7 @@
     (hoverChange)="onFooterHovered($event)" />
 
   <app-reader-sidebar />
+  <app-reader-footnote-popup [background]="readerState().theme.bg" />
   <app-reader-left-sidebar />
 
   @if (showQuickSettings()) {

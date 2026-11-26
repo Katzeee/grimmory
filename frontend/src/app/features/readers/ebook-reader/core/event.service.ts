@@ -305,6 +305,13 @@ export class ReaderEventService {
         return;
       }
 
+      // A link click follows the link rather than tapping the page. The target belongs to the
+      // book's own window, so it is an instance of that window's Element.
+      const win = doc.defaultView;
+      if (win && event.target instanceof win.Element && event.target.closest('a[href]')) {
+        return;
+      }
+
       const iframe = doc.defaultView?.frameElement as HTMLIFrameElement | null;
       if (!iframe) return;
 
