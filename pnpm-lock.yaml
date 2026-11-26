@@ -204,6 +204,15 @@ importers:
       '@fontsource-variable/literata':
         specifier: 5.3.0
         version: 5.3.0
+      '@fontsource-variable/noto-sans-jp':
+        specifier: 5.3.1
+        version: 5.3.1
+      '@fontsource-variable/noto-sans-sc':
+        specifier: 5.3.1
+        version: 5.3.1
+      '@fontsource-variable/noto-sans-tc':
+        specifier: 5.3.1
+        version: 5.3.1
       '@fontsource-variable/noto-serif-jp':
         specifier: 5.3.1
         version: 5.3.1
@@ -1358,6 +1367,15 @@ packages:
 
   '@fontsource-variable/literata@5.3.0':
     resolution: {integrity: sha512-1Jw7xvOcoGyB83lxB2nG4bfNbqtX2/TTbdh9sHAOmU064SvmSdulDtA5RBu5JYWf64fdaKX7xU+z3GO1T2bCHA==}
+
+  '@fontsource-variable/noto-sans-jp@5.3.1':
+    resolution: {integrity: sha512-/anGvJFc5y36f8DJ+3TSh2+KAvaRLA9PaLUMvneeY5s4j8m+8X4F3lE/sjTuG9YI5BX4sykvCk4TuJMG7ecMRQ==}
+
+  '@fontsource-variable/noto-sans-sc@5.3.1':
+    resolution: {integrity: sha512-UB96JJ17HyD5ehEU7Em0hDdh7fvTMB4B4Hzmq5c4QaNwwSLqTrdM2S+coySeBqCkXwh0DxqXT0b0wMrmzorFpQ==}
+
+  '@fontsource-variable/noto-sans-tc@5.3.1':
+    resolution: {integrity: sha512-gueh+AySNkihE+HvizXLHltxt5/xVFSvw6ISnKTlpb/lG5QQm6u/KwuempTJ/jDYMST3xwiERYTTyseoJ/Kxew==}
 
   '@fontsource-variable/noto-serif-jp@5.3.1':
     resolution: {integrity: sha512-quU5uIezSqZFgPaDDI2C3hQfIJHzyXVYuvMZsDDF++og8yechsAwcmCkLLdofPboUB1xHOWV3xohJyIVBi3b4g==}
@@ -5646,6 +5664,12 @@ snapshots:
       '@noble/hashes': 2.4.0
 
   '@fontsource-variable/literata@5.3.0': {}
+
+  '@fontsource-variable/noto-sans-jp@5.3.1': {}
+
+  '@fontsource-variable/noto-sans-sc@5.3.1': {}
+
+  '@fontsource-variable/noto-sans-tc@5.3.1': {}
 
   '@fontsource-variable/noto-serif-jp@5.3.1': {}
 

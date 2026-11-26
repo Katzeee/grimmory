@@ -1,7 +1,7 @@
 import {inject, Service} from '@angular/core';
 import {ReaderSansSerifFont, ReaderSerifFont, ReaderState} from '../state/reader-state.service';
 import {EpubCustomFontService} from '../features/fonts/custom-font.service';
-import {bundledFontStylesheetUrl, LITERATA, notoSerifCjk} from '../features/fonts/bundled-fonts';
+import {BundledFont, bundledFontStylesheetUrl, LITERATA, notoSansCjk, notoSerifCjk} from '../features/fonts/bundled-fonts';
 import {SANS_SERIF_VARIABLE, SERIF_VARIABLE} from '../features/fonts/font-families';
 import {BookLayout} from './layout.service';
 
@@ -34,7 +34,7 @@ export class ReaderStyleService {
     const mediaActiveClass = 'media-active';
 
     const serif = this.serifChain(serifFont, layout?.language);
-    const sansSerif = this.sansSerifChain(sansSerifFont);
+    const sansSerif = this.sansSerifChain(sansSerifFont, layout?.language);
     const fontImports = [...serif.stylesheets, ...sansSerif.stylesheets]
       .map(stylesheet => `@import url("${bundledFontStylesheetUrl(stylesheet)}");`)
       .join('\n');
@@ -204,23 +204,32 @@ export class ReaderStyleService {
     `;
   }
 
-  // Every serif choice but the platform's falls back to Noto Serif CJK for the CJK text its own
-  // font lacks.
+  // Every choice but the platform's falls back to Noto CJK in the same style for the CJK text its
+  // own font lacks.
   private serifChain(font: ReaderSerifFont, language?: string): FontChain {
     if (font === 'system') return PLATFORM_FONTS;
-    const cjk = notoSerifCjk(language);
     const main = font === 'noto-serif' ? PLATFORM_FONTS
-      : font === 'literata' ? {families: [LITERATA.family], fontFaces: [], stylesheets: LITERATA.stylesheets}
+      : font === 'literata' ? this.bundledFontChain(LITERATA)
         : this.customFontChain(font);
+    return this.withCjk(main, notoSerifCjk(language));
+  }
+
+  private sansSerifChain(font: ReaderSansSerifFont, language?: string): FontChain {
+    if (font === 'system') return PLATFORM_FONTS;
+    const main = font === 'noto-sans' ? PLATFORM_FONTS : this.customFontChain(font);
+    return this.withCjk(main, notoSansCjk(language));
+  }
+
+  private bundledFontChain(font: BundledFont): FontChain {
+    return {families: [font.family], fontFaces: [], stylesheets: font.stylesheets};
+  }
+
+  private withCjk(main: FontChain, cjk: BundledFont): FontChain {
     return {
       families: [...main.families, cjk.family],
       fontFaces: main.fontFaces,
       stylesheets: [...main.stylesheets, ...cjk.stylesheets],
     };
-  }
-
-  private sansSerifChain(font: ReaderSansSerifFont): FontChain {
-    return font === 'system' ? PLATFORM_FONTS : this.customFontChain(font);
   }
 
   private customFontChain(font: string): FontChain {

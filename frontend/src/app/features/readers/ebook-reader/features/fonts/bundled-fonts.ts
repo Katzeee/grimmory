@@ -10,18 +10,37 @@ export const LITERATA: BundledFont = {
   stylesheets: ['literata/opsz.css', 'literata/opsz-italic.css'],
 };
 
-const NOTO_SERIF_JP: BundledFont = {family: '"Noto Serif JP Variable"', stylesheets: ['noto-serif-jp/index.css']};
-const NOTO_SERIF_SC: BundledFont = {family: '"Noto Serif SC Variable"', stylesheets: ['noto-serif-sc/index.css']};
-const NOTO_SERIF_TC: BundledFont = {family: '"Noto Serif TC Variable"', stylesheets: ['noto-serif-tc/index.css']};
+type CjkRegion = 'jp' | 'sc' | 'tc';
+
+// Noto Serif CJK and Noto Sans CJK are one design in two styles, with a font per region.
+const notoCjk = (style: 'serif' | 'sans'): Record<CjkRegion, BundledFont> => {
+  const name = style === 'serif' ? 'Noto Serif' : 'Noto Sans';
+  const font = (region: CjkRegion): BundledFont => ({
+    family: `"${name} ${region.toUpperCase()} Variable"`,
+    stylesheets: [`noto-${style}-${region}/index.css`],
+  });
+  return {jp: font('jp'), sc: font('sc'), tc: font('tc')};
+};
+
+const NOTO_SERIF_CJK = notoCjk('serif');
+const NOTO_SANS_CJK = notoCjk('sans');
 
 // Chinese, Japanese and Korean share code points for Han characters, and each language draws
-// some of them differently, so the serif follows the book's language. Books in other languages
-// get the Simplified Chinese forms.
-export function notoSerifCjk(language: string | undefined): BundledFont {
+// some of them differently, so the CJK fonts follow the book's language. Books in other
+// languages get the Simplified Chinese forms.
+function cjkRegion(language: string | undefined): CjkRegion {
   const tag = language?.toLowerCase() ?? '';
-  if (tag.startsWith('ja')) return NOTO_SERIF_JP;
-  if (/^zh-(hant|tw|hk|mo)/.test(tag)) return NOTO_SERIF_TC;
-  return NOTO_SERIF_SC;
+  if (tag.startsWith('ja')) return 'jp';
+  if (/^zh-(hant|tw|hk|mo)/.test(tag)) return 'tc';
+  return 'sc';
+}
+
+export function notoSerifCjk(language: string | undefined): BundledFont {
+  return NOTO_SERIF_CJK[cjkRegion(language)];
+}
+
+export function notoSansCjk(language: string | undefined): BundledFont {
+  return NOTO_SANS_CJK[cjkRegion(language)];
 }
 
 // Book pages load from blob URLs, so stylesheet URLs are absolute.

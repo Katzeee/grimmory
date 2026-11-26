@@ -63,6 +63,21 @@
                 "output": "/assets/fonts/noto-serif-tc/"
               },
               {
+                "glob": "{*.css,LICENSE,files/*.woff2}",
+                "input": "node_modules/@fontsource-variable/noto-sans-jp",
+                "output": "/assets/fonts/noto-sans-jp/"
+              },
+              {
+                "glob": "{*.css,LICENSE,files/*.woff2}",
+                "input": "node_modules/@fontsource-variable/noto-sans-sc",
+                "output": "/assets/fonts/noto-sans-sc/"
+              },
+              {
+                "glob": "{*.css,LICENSE,files/*.woff2}",
+                "input": "node_modules/@fontsource-variable/noto-sans-tc",
+                "output": "/assets/fonts/noto-sans-tc/"
+              },
+              {
                 "glob": "**/*",
                 "input": "node_modules/@embedpdf/pdfium/dist/",
                 "output": "/assets/pdfium/"

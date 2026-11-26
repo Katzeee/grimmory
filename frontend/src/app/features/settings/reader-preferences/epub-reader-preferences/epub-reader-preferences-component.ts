@@ -235,6 +235,7 @@ export class EpubReaderPreferencesComponent {
   ]);
 
   readonly sansSerifFonts = computed<FontOption<Required<FolioReaderSettings>['sansSerifFont']>[]>(() => [
+    {key: 'noto-sans', nameKey: 'notoSansCjk'},
     {key: 'system', nameKey: 'systemFont'},
     ...this.customFontOptions(),
   ]);
@@ -250,7 +251,7 @@ export class EpubReaderPreferencesComponent {
   }
 
   get sansSerifFont(): Required<FolioReaderSettings>['sansSerifFont'] {
-    return this.folio.sansSerifFont ?? 'system';
+    return this.folio.sansSerifFont ?? 'noto-sans';
   }
 
   set sansSerifFont(sansSerifFont: Required<FolioReaderSettings>['sansSerifFont']) {

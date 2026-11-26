@@ -273,6 +273,7 @@
         "sans-serif": "无衬线"
       },
       "notoSerifCjk": "思源宋体",
+      "notoSansCjk": "思源黑体",
       "rubyText": "注音",
       "ruby": {
         "shown": "显示",
@@ -3867,6 +3868,7 @@
         "sans-serif": "无衬线"
       },
       "notoSerifCjk": "思源宋体",
+      "notoSansCjk": "思源黑体",
       "rubyText": "注音",
       "ruby": {
         "shown": "显示",

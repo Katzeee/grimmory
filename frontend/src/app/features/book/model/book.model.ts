@@ -349,7 +349,7 @@ export interface FolioReaderSettings {
   writingMode?: 'auto' | 'horizontal' | 'vertical';
   pageDirection?: 'auto' | 'ltr' | 'rtl';
   serifFont?: 'literata' | 'noto-serif' | 'system' | `custom:${number}`;
-  sansSerifFont?: 'system' | `custom:${number}`;
+  sansSerifFont?: 'noto-sans' | 'system' | `custom:${number}`;
   fontOverride?: 'off' | 'serif' | 'sans-serif';
   rubyDisplay?: 'shown' | 'dimmed' | 'tap' | 'hidden';
 }

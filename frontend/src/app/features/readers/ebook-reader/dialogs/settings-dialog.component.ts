@@ -16,7 +16,7 @@ import {ReaderLayoutService} from '../core/layout.service';
 import {BookService} from '../../../book/service/book.service';
 import {EbookViewerSetting} from '../../../book/model/book.model';
 import {EpubCustomFontService} from '../features/fonts/custom-font.service';
-import {bundledFontStylesheetUrl, LITERATA, notoSerifCjk} from '../features/fonts/bundled-fonts';
+import {bundledFontStylesheetUrl, LITERATA, notoSansCjk, notoSerifCjk} from '../features/fonts/bundled-fonts';
 
 interface FontOption<T extends string> {
   value: T;
@@ -91,6 +91,7 @@ export class ReaderSettingsDialogComponent implements OnInit {
   ]);
 
   readonly sansSerifFonts = computed<FontOption<ReaderSansSerifFont>[]>(() => [
+    {value: 'noto-sans', nameKey: 'notoSansCjk', family: notoSansCjk(this.layout.bookLanguage()).family, sample: '永'},
     {value: 'system', nameKey: 'systemFont', family: 'sans-serif', sample: 'Aa'},
     ...this.customFonts(),
   ]);
@@ -99,7 +100,8 @@ export class ReaderSettingsDialogComponent implements OnInit {
 
   // The font buttons preview each bundled font in the dialog's own document.
   private linkBundledFonts() {
-    const stylesheets = [...LITERATA.stylesheets, ...notoSerifCjk(this.layout.bookLanguage()).stylesheets];
+    const language = this.layout.bookLanguage();
+    const stylesheets = [...LITERATA.stylesheets, ...notoSerifCjk(language).stylesheets, ...notoSansCjk(language).stylesheets];
     for (const href of stylesheets.map(bundledFontStylesheetUrl)) {
       if (this.document.head.querySelector(`link[href="${href}"]`)) continue;
       const link = this.document.createElement('link');

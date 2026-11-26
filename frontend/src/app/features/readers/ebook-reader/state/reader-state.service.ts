@@ -77,7 +77,7 @@ export class ReaderStateService {
     maxBlockSize: 1440,
     fontFamily: null,
     serifFont: 'literata',
-    sansSerifFont: 'system',
+    sansSerifFont: 'noto-sans',
     fontOverride: 'off',
     rubyDisplay: 'shown',
     isDark: true,

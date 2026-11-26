@@ -275,6 +275,7 @@
         "sans-serif": "Sans-serif"
       },
       "notoSerifCjk": "Noto Serif CJK",
+      "notoSansCjk": "Noto Sans CJK",
       "rubyText": "Ruby Text",
       "ruby": {
         "shown": "Shown",
@@ -3739,6 +3740,7 @@
         "sans-serif": "Sans-serif"
       },
       "notoSerifCjk": "Noto Serif CJK",
+      "notoSansCjk": "Noto Sans CJK",
       "rubyText": "Ruby Text",
       "ruby": {
         "shown": "Shown",
