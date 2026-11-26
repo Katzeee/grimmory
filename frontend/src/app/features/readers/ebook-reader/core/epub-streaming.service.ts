@@ -33,6 +33,7 @@ export interface EpubBookInfo {
   toc: EpubTocItem;
   metadata: Record<string, unknown>;
   coverPath?: string;
+  entries: string[];
 }
 
 @Service()

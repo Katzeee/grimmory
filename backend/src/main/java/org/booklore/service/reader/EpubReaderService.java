@@ -31,7 +31,6 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 @RequiredArgsConstructor
 public class EpubReaderService {
 
-    private static final String CONTAINER_PATH = "META-INF/container.xml";
 
     private static final int MAX_CACHE_ENTRIES = 50;
 
@@ -84,15 +83,7 @@ public class EpubReaderService {
         }
 
         private static Set<String> buildValidPaths(EpubBookInfo bookInfo) {
-            Set<String> paths = new HashSet<>(bookInfo.getManifest().size() + 2);
-            paths.add(CONTAINER_PATH);
-            if (bookInfo.getContainerPath() != null) {
-                paths.add(bookInfo.getContainerPath());
-            }
-            for (EpubManifestItem item : bookInfo.getManifest()) {
-                paths.add(item.getHref());
-            }
-            return Collections.unmodifiableSet(paths);
+            return Set.copyOf(bookInfo.getEntries());
         }
 
         private static Map<String, EpubManifestItem> buildManifestByHref(EpubBookInfo bookInfo) {
@@ -128,12 +119,9 @@ public class EpubReaderService {
         CachedEpubMetadata metadata = getCachedMetadata(epubPath);
 
         String cleanPath = filePath.startsWith("/") ? filePath.substring(1) : filePath;
-        String actualPath;
-        if (CONTAINER_PATH.equals(cleanPath) || cleanPath.equals(metadata.bookInfo.getContainerPath())) {
-            actualPath = cleanPath;
-        } else {
-            actualPath = normalizePath(filePath, metadata.bookInfo.getRootPath());
-        }
+        String actualPath = metadata.validPaths.contains(cleanPath)
+                ? cleanPath
+                : normalizePath(filePath, metadata.bookInfo.getRootPath());
 
         if (!isValidPath(actualPath, metadata)) {
             throw new FileNotFoundException("File not found in EPUB: " + filePath);
@@ -229,6 +217,7 @@ public class EpubReaderService {
                     .toc(toc)
                     .metadata(metadata)
                     .coverPath(coverPath)
+                    .entries(archiveService.getEntryNames(epubPath))
                     .build();
 
             return new CachedEpubMetadata(bookInfo, lastModified);

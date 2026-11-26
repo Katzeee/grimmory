@@ -230,6 +230,25 @@ class EpubReaderServiceTest {
     }
 
     @Test
+    void testStreamFile_ArchiveFileOutsideManifestAllowed() throws Exception {
+        when(bookRepository.findByIdForStreaming(1L)).thenReturn(Optional.of(bookEntity));
+
+        try (MockedStatic<FileUtils> fileUtilsStatic = mockStatic(FileUtils.class)) {
+            fileUtilsStatic.when(() -> FileUtils.getBookFullPath(bookEntity)).thenReturn(epubPath);
+
+            writeTestEpub();
+
+            EpubBookInfo bookInfo = epubReaderService.getBookInfo(1L);
+            assertTrue(bookInfo.getEntries().contains("mimetype"));
+
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            epubReaderService.streamFile(1L, "mimetype", outputStream);
+
+            assertEquals("application/epub+zip", outputStream.toString(StandardCharsets.UTF_8));
+        }
+    }
+
+    @Test
     void testGetContentType_FromManifest() throws Exception {
         when(bookRepository.findByIdForStreaming(1L)).thenReturn(Optional.of(bookEntity));
 

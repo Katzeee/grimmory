@@ -37,11 +37,14 @@ export const makeStreamingLoader = (bookId, baseUrl, bookInfo, authToken = null,
     }
   }
 
+  // Every file in the archive; other names are absent without a request
+  const servedPaths = new Set(bookInfo.entries)
+
   /**
    * Load file as text
    */
   const loadText = async (name) => {
-    if (!name) return null
+    if (!servedPaths.has(name)) return null
     try {
       const url = getFileUrl(name)
       const response = await fetch(url, getFetchOptions())
@@ -60,7 +63,7 @@ export const makeStreamingLoader = (bookId, baseUrl, bookInfo, authToken = null,
    * Load file as Blob with optional MIME type
    */
   const loadBlob = async (name, type) => {
-    if (!name) return null
+    if (!servedPaths.has(name)) return null
     try {
       const url = getFileUrl(name)
       const response = await fetch(url, getFetchOptions())
@@ -89,12 +92,8 @@ export const makeStreamingLoader = (bookId, baseUrl, bookInfo, authToken = null,
     return item?.size ?? 0
   }
 
-  // Container entries the EPUB class checks before resolving undeclared images, fonts and media
-  const entries = [
-    'META-INF/container.xml',
-    bookInfo.containerPath,
-    ...bookInfo.manifest.map(item => item.href),
-  ].map(filename => ({filename}))
+  // The archive listing in the shape the EPUB class reads from a zip loader
+  const entries = bookInfo.entries.map(filename => ({filename}))
 
   return {
     entries,

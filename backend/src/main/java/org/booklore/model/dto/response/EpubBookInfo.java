@@ -20,4 +20,6 @@ public class EpubBookInfo {
     private EpubTocItem toc;
     private Map<String, Object> metadata;
     private String coverPath;
+    // Every file in the archive, so a client can read it the way it reads a local EPUB
+    private List<String> entries;
 }
