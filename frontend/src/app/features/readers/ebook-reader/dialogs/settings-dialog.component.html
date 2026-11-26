@@ -135,6 +135,22 @@
               <span class="font-name">{{ t('notoSerifCjk') }}</span>
             </button>
           </div>
+
+          <div class="section-header">{{ t('rubyText') }}</div>
+          <div class="radio-group">
+            @for (display of rubyDisplays; track display) {
+              <label>
+                <input
+                  type="radio"
+                  name="rubyDisplay"
+                  [value]="display"
+                  [checked]="state.rubyDisplay === display"
+                  (change)="setRubyDisplay(display)"
+                />
+                {{ t('ruby.' + display) }}
+              </label>
+            }
+          </div>
         </div>
       }
 

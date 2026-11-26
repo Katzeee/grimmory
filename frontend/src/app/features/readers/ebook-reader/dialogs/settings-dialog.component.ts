@@ -1,7 +1,7 @@
 import {Component, inject, Input, OnInit, output, Renderer2} from '@angular/core';
 import {DecimalPipe, DOCUMENT} from '@angular/common';
 import {TranslocoDirective} from '@jsverse/transloco';
-import {folioSettingsOf, ReaderCjkFont, ReaderPageDirection, ReaderStateService, ReaderWritingMode} from '../state/reader-state.service';
+import {folioSettingsOf, ReaderCjkFont, ReaderPageDirection, ReaderRubyDisplay, ReaderStateService, ReaderWritingMode} from '../state/reader-state.service';
 import {ReaderViewManagerService} from '../core/view-manager.service';
 import {ReaderLayoutService} from '../core/layout.service';
 import {BookService} from '../../../book/service/book.service';
@@ -116,6 +116,13 @@ export class ReaderSettingsDialogComponent implements OnInit {
 
   setCjkFont(value: ReaderCjkFont) {
     this.stateService.setCjkFont(value);
+    this.syncSettingsToBackend();
+  }
+
+  readonly rubyDisplays: ReaderRubyDisplay[] = ['shown', 'dimmed', 'tap', 'hidden'];
+
+  setRubyDisplay(value: ReaderRubyDisplay) {
+    this.stateService.setRubyDisplay(value);
     this.syncSettingsToBackend();
   }
 

@@ -225,6 +225,16 @@ export class EpubReaderPreferencesComponent {
     this.setFolio({cjkFont});
   }
 
+  readonly rubyDisplays: Required<FolioReaderSettings>['rubyDisplay'][] = ['shown', 'dimmed', 'tap', 'hidden'];
+
+  get rubyDisplay(): Required<FolioReaderSettings>['rubyDisplay'] {
+    return this.folio.rubyDisplay ?? 'shown';
+  }
+
+  set rubyDisplay(rubyDisplay: Required<FolioReaderSettings>['rubyDisplay']) {
+    this.setFolio({rubyDisplay});
+  }
+
   get tapToTurnPage(): boolean {
     return this.userSettings().ebookReaderSetting.tapToTurnPage ?? true;
   }

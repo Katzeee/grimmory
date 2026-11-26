@@ -268,6 +268,14 @@
       "cjkFont": "CJK Font",
       "cjkFontDesc": "Font for Chinese, Japanese and Korean text. Noto Serif CJK draws Han characters the way the book's language writes them.",
       "notoSerifCjk": "Noto Serif CJK",
+      "rubyText": "Ruby Text",
+      "rubyTextDesc": "How readings printed above or beside the text show, such as furigana, pinyin or zhuyin. On tap hides them until you tap a word, or hover it with a mouse.",
+      "ruby": {
+        "shown": "Shown",
+        "dimmed": "Dimmed",
+        "tap": "On tap",
+        "hidden": "Hidden"
+      },
       "fontSize": "Font Size",
       "fontSizeDesc": "Increase or decrease text size in points for optimal readability.",
       "lineHeight": "Line Height",
@@ -3719,6 +3727,13 @@
       "fontFamily": "Font Family",
       "cjkFont": "CJK Font",
       "notoSerifCjk": "Noto Serif CJK",
+      "rubyText": "Ruby Text",
+      "ruby": {
+        "shown": "Shown",
+        "dimmed": "Dimmed",
+        "tap": "On tap",
+        "hidden": "Hidden"
+      },
       "layout": "Layout",
       "readingFlow": "Reading Flow",
       "paginated": "Paginated",

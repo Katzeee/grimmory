@@ -11,6 +11,9 @@ interface FontChoice {
   stylesheets?: string[];
 }
 
+// Marks annotated text whose reading a tap has revealed.
+export const RUBY_REVEALED_CLASS = 'folio-ruby-revealed';
+
 const GENERIC_FAMILIES = new Set(['serif', 'sans-serif', 'monospace', 'cursive', 'fantasy', 'system-ui']);
 
 interface ReaderRenderer {
@@ -24,7 +27,7 @@ export class ReaderStyleService {
   private readonly epubCustomFontService = inject(EpubCustomFontService);
 
   generateCSS(state: ReaderState, layout?: BookLayout): string {
-    const {lineHeight, justify, hyphenate, fontSize, theme, fontFamily, cjkFont, writingMode} = state;
+    const {lineHeight, justify, hyphenate, fontSize, theme, fontFamily, cjkFont, writingMode, rubyDisplay} = state;
     const userStylesheet = '';
     const overrideFont = false;
     const mediaActiveClass = 'media-active';
@@ -54,9 +57,24 @@ export class ReaderStyleService {
             writing-mode: ${writingMode === 'vertical' ? 'vertical-rl' : 'horizontal-tb'} !important;
         }`;
 
+    // A hidden reading keeps its space, so changing how ruby shows never moves the text.
+    const rubyRule = {
+      shown: '',
+      dimmed: `
+        rt { opacity: 0.4; }`,
+      tap: `
+        rt { visibility: hidden; }
+        ruby.${RUBY_REVEALED_CLASS} rt { visibility: visible; }
+        @media (hover: hover) {
+            ruby:hover rt { visibility: visible; }
+        }`,
+      hidden: `
+        rt { visibility: hidden; }`,
+    }[rubyDisplay];
+
     return `${fontImports}
       ${fontFaceRule}
-      @namespace epub "http://www.idpf.org/2007/ops";${writingModeRule}
+      @namespace epub "http://www.idpf.org/2007/ops";${writingModeRule}${rubyRule}
       @media print {
           html {
               column-width: auto !important;

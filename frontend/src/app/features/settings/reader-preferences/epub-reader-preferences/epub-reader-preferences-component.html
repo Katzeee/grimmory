@@ -130,6 +130,28 @@
       <div class="setting-item">
         <div class="setting-info">
           <div class="setting-label-row">
+            <span class="setting-label">{{ t('rubyText') }}</span>
+            <div class="button-group">
+              @for (display of rubyDisplays; track display) {
+                <button
+                  type="button"
+                  class="option-button"
+                  [class.selected]="rubyDisplay === display"
+                  (click)="rubyDisplay = display">
+                  <span class="option-text">{{ t('ruby.' + display) }}</span>
+                </button>
+              }
+            </div>
+          </div>
+          <p class="setting-description">
+            {{ t('rubyTextDesc') }}
+          </p>
+        </div>
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-info">
+          <div class="setting-label-row">
             <span class="setting-label">{{ t('fontSize') }}</span>
             <div class="font-size-controls">
               <p-button icon="pi pi-minus" size="small" rounded outlined (click)="decreaseFontSize()" />

@@ -266,6 +266,14 @@
       "cjkFont": "中日文字体",
       "cjkFontDesc": "中文、日文和韩文所用的字体。思源宋体会按书的语言选用对应的汉字字形。",
       "notoSerifCjk": "思源宋体",
+      "rubyText": "注音",
+      "rubyTextDesc": "文字上方或旁边的注音（振假名、拼音、注音符号等）如何显示。点按显示会先隐藏注音，点一下词语（或用鼠标悬停）才显示。",
+      "ruby": {
+        "shown": "显示",
+        "dimmed": "淡化",
+        "tap": "点按显示",
+        "hidden": "隐藏"
+      },
       "fontSize": "字体大小",
       "fontSizeDesc": "以磅为单位增大或减小文本大小，以获得最佳可读性。",
       "lineHeight": "行高",
@@ -3847,6 +3855,13 @@
       "fontFamily": "字体",
       "cjkFont": "中日文字体",
       "notoSerifCjk": "思源宋体",
+      "rubyText": "注音",
+      "ruby": {
+        "shown": "显示",
+        "dimmed": "淡化",
+        "tap": "点按显示",
+        "hidden": "隐藏"
+      },
       "layout": "布局",
       "readingFlow": "阅读流",
       "paginated": "翻页",

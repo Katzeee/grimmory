@@ -1,6 +1,7 @@
 import {inject, Service} from '@angular/core';
 import {Subject} from 'rxjs';
 import {ReaderAnnotationService} from '../features/annotations/annotation-renderer.service';
+import {RUBY_REVEALED_CLASS} from './style.service';
 
 export interface TextSelection {
   text: string;
@@ -83,6 +84,7 @@ interface ViewCallbacks {
   getContents: () => { index: number; doc: Document }[] | null;
   isTapToTurnEnabled?: () => boolean;
   isRtlProgression?: () => boolean;
+  isRubyTapToReveal?: () => boolean;
 }
 
 @Service()
@@ -308,8 +310,9 @@ export class ReaderEventService {
       // A link click follows the link rather than tapping the page. The target belongs to the
       // book's own window, so it is an instance of that window's Element.
       const win = doc.defaultView;
-      if (win && event.target instanceof win.Element && event.target.closest('a[href]')) {
-        return;
+      if (win && event.target instanceof win.Element) {
+        if (event.target.closest('a[href]')) return;
+        if (this.toggleRuby(event.target)) return;
       }
 
       const iframe = doc.defaultView?.frameElement as HTMLIFrameElement | null;
@@ -464,6 +467,7 @@ export class ReaderEventService {
       if (touchDuration < this.LONG_HOLD_THRESHOLD_MS && Math.abs(deltaX) < 10 && deltaY < 10) {
         const target = event.target as Element | null;
         if (target?.closest('a[href]')) return;
+        if (target && this.toggleRuby(target)) return;
         const iframe = doc.defaultView?.frameElement as HTMLIFrameElement | null;
         if (!iframe) return;
 
@@ -649,6 +653,16 @@ export class ReaderEventService {
     } else {
       this.eventSubject.next({type: 'middle-single-tap'});
     }
+  }
+
+  // When readings show on tap, a tap on annotated text shows or hides its reading instead of
+  // tapping the page.
+  private toggleRuby(target: Element): boolean {
+    if (!this.viewCallbacks?.isRubyTapToReveal?.()) return false;
+    const ruby = target.closest('ruby');
+    if (!ruby) return false;
+    ruby.classList.toggle(RUBY_REVEALED_CLASS);
+    return true;
   }
 
   // A vertical book in scrolled flow scrolls sideways, which a mouse wheel does not reach.

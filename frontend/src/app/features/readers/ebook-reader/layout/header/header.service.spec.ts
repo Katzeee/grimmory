@@ -28,6 +28,7 @@ describe('ReaderHeaderService', () => {
       writingMode: 'vertical',
       pageDirection: 'rtl',
       cjkFont: 'noto-serif',
+      rubyDisplay: 'tap',
     })),
     toggleDarkMode: vi.fn(),
     updateFontSize: vi.fn(),
@@ -152,7 +153,7 @@ describe('ReaderHeaderService', () => {
         fontFamily: null,
         isDark: true,
         flow: 'paginated',
-        folio: {writingMode: 'vertical', pageDirection: 'rtl', cjkFont: 'noto-serif'},
+        folio: {writingMode: 'vertical', pageDirection: 'rtl', cjkFont: 'noto-serif', rubyDisplay: 'tap'},
       }
     }, 12);
   });

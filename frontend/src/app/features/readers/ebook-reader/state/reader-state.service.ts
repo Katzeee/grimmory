@@ -10,6 +10,7 @@ import {EpubCustomFontService} from '../features/fonts/custom-font.service';
 export type ReaderWritingMode = Required<FolioReaderSettings>['writingMode'];
 export type ReaderPageDirection = Required<FolioReaderSettings>['pageDirection'];
 export type ReaderCjkFont = Required<FolioReaderSettings>['cjkFont'];
+export type ReaderRubyDisplay = Required<FolioReaderSettings>['rubyDisplay'];
 
 export interface ReaderState {
   lineHeight: number;
@@ -23,6 +24,7 @@ export interface ReaderState {
   maxBlockSize: number;
   fontFamily: string | null;
   cjkFont: ReaderCjkFont;
+  rubyDisplay: ReaderRubyDisplay;
   isDark: boolean;
   flow: 'paginated' | 'scrolled';
   tapToTurnPage: boolean;
@@ -32,7 +34,8 @@ export interface ReaderState {
 
 // The fork's settings in the form they are stored in, per book and globally.
 export function folioSettingsOf(state: ReaderState): FolioReaderSettings {
-  return {writingMode: state.writingMode, pageDirection: state.pageDirection, cjkFont: state.cjkFont};
+  const {writingMode, pageDirection, cjkFont, rubyDisplay} = state;
+  return {writingMode, pageDirection, cjkFont, rubyDisplay};
 }
 
 interface LegacyViewerSetting {
@@ -70,6 +73,7 @@ export class ReaderStateService {
     maxBlockSize: 1440,
     fontFamily: null,
     cjkFont: 'auto',
+    rubyDisplay: 'shown',
     isDark: true,
     flow: 'paginated',
     tapToTurnPage: true,
@@ -153,6 +157,7 @@ export class ReaderStateService {
         if (folio?.writingMode) newState.writingMode = folio.writingMode;
         if (folio?.pageDirection) newState.pageDirection = folio.pageDirection;
         if (folio?.cjkFont) newState.cjkFont = folio.cjkFont;
+        if (folio?.rubyDisplay) newState.rubyDisplay = folio.rubyDisplay;
         if (settings.theme) {
           const theme = this.themes.find(t => t.name === settings.theme);
           if (theme) {
@@ -272,6 +277,10 @@ export class ReaderStateService {
 
   setCjkFont(cjkFont: ReaderCjkFont): void {
     this.updateState({cjkFont});
+  }
+
+  setRubyDisplay(rubyDisplay: ReaderRubyDisplay): void {
+    this.updateState({rubyDisplay});
   }
 
   private updateState(partial: Partial<ReaderState>): void {

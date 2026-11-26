@@ -17,4 +17,5 @@ public class FolioReaderSettings {
     private String writingMode;
     private String pageDirection;
     private String cjkFont;
+    private String rubyDisplay;
 }

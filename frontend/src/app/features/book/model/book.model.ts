@@ -349,6 +349,7 @@ export interface FolioReaderSettings {
   writingMode?: 'auto' | 'horizontal' | 'vertical';
   pageDirection?: 'auto' | 'ltr' | 'rtl';
   cjkFont?: 'auto' | 'noto-serif';
+  rubyDisplay?: 'shown' | 'dimmed' | 'tap' | 'hidden';
 }
 
 export interface EbookViewerSetting {

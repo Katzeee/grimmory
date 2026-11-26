@@ -172,7 +172,7 @@ class BookServiceTest {
         epubPref.setMaxColumnCount(2);
         epubPref.setMaxInlineSize(1200);
         epubPref.setTheme("light");
-        FolioReaderSettings folio = new FolioReaderSettings("horizontal", "ltr", "noto-serif");
+        FolioReaderSettings folio = new FolioReaderSettings("horizontal", "ltr", "noto-serif", "tap");
         epubPref.setFolio(folio);
         when(ebookViewerPreferenceRepository.findByBookIdAndUserId(4L, testUser.getId())).thenReturn(Optional.of(epubPref));
         when(authenticationService.getAuthenticatedUser()).thenReturn(testUser);

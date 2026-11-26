@@ -131,14 +131,14 @@ class BookUpdateServiceTest {
                         .maxInlineSize(1200)
                         .theme("dark")
                         .flow("paginated")
-                        .folio(new FolioReaderSettings("vertical", "rtl", "noto-serif"))
+                        .folio(new FolioReaderSettings("vertical", "rtl", "noto-serif", "dimmed"))
                         .build())
                 .build();
 
         bookUpdateService.updateBookViewerSetting(bookId, settings);
 
         verify(ebookViewerPreferenceRepository).save(epubPrefs);
-        assertEquals(new FolioReaderSettings("vertical", "rtl", "noto-serif"), epubPrefs.getFolio());
+        assertEquals(new FolioReaderSettings("vertical", "rtl", "noto-serif", "dimmed"), epubPrefs.getFolio());
         assertEquals("serif", epubPrefs.getFontFamily());
         assertEquals(18, epubPrefs.getFontSize());
         assertEquals(0.1f, epubPrefs.getGap());

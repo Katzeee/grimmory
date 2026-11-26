@@ -144,7 +144,8 @@ export class ReaderViewManagerService {
       getCFI: (index: number, range: Range) => this.view?.getCFI(index, range) ?? null,
       getContents: () => this.view?.renderer?.getContents() ?? null,
       isTapToTurnEnabled: () => this.readerStateService.state().tapToTurnPage,
-      isRtlProgression: () => this.layout.isRtlProgression()
+      isRtlProgression: () => this.layout.isRtlProgression(),
+      isRubyTapToReveal: () => this.readerStateService.state().rubyDisplay === 'tap'
     });
   }
 
