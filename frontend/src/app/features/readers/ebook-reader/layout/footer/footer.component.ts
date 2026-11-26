@@ -81,6 +81,11 @@ export class ReaderNavbarComponent {
     return this.progressData?.pageItem?.label ?? '';
   }
 
+  // A book that turns pages right to left starts on the right, so the bar runs the same way.
+  get rtl(): boolean {
+    return this.managerService.rtlProgression();
+  }
+
   get navbarVisible(): boolean {
     return this.forceVisible;
   }

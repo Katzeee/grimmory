@@ -1,8 +1,8 @@
 <ng-container *transloco="let t; prefix: 'readerEbook.footer'">
-<div class="reader-navbar" [class.is-visible]="navbarVisible"
+<div class="reader-navbar" [class.is-visible]="navbarVisible" [attr.dir]="rtl ? 'rtl' : null"
   (mouseenter)="hoverChange.emit(true)" (mouseleave)="hoverChange.emit(false)">
   <button type="button" class="icon-btn" [title]="t('previousSection')" [disabled]="!canGoPrevious" (click)="onPreviousSection()">
-    <app-reader-icon name="chevron-left" />
+    <app-reader-icon [name]="rtl ? 'chevron-right' : 'chevron-left'" />
   </button>
 
   <div class="progress-section">
@@ -21,14 +21,14 @@
         [title]="t('progress')"/>
       <div class="progress-ticks">
         @for (frac of displaySectionFractions; track frac) {
-          <span class="progress-tick" [style.left.%]="frac * 100"></span>
+          <span class="progress-tick" [style.inset-inline-start.%]="frac * 100"></span>
         }
       </div>
     </div>
   </div>
 
   <button type="button" class="icon-btn" [title]="t('nextSection')" [disabled]="!canGoNext" (click)="onNextSection()">
-    <app-reader-icon name="chevron-right" />
+    <app-reader-icon [name]="rtl ? 'chevron-left' : 'chevron-right'" />
   </button>
 </div>
 

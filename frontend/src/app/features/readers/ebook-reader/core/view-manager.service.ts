@@ -129,6 +129,9 @@ export class ReaderViewManagerService {
   private readonly verticalWritingState = signal(false);
   // The writing mode of the section on screen, as last measured by isVerticalWriting.
   readonly verticalWriting = this.verticalWritingState.asReadonly();
+  private readonly rtlProgressionState = signal(false);
+  // Whether pages turn right to left, as last applied by setPageDirection.
+  readonly rtlProgression = this.rtlProgressionState.asReadonly();
   // Where relayouts reopen the book until the reader moves, so repeated relayouts don't drift
   // to the start of whatever spread the previous layout paired the position into.
   private relayoutAnchor: string | number | null = null;
@@ -217,6 +220,7 @@ export class ReaderViewManagerService {
     const dir = direction === 'auto' ? this.declaredBookDir : direction;
     book.dir = dir;
     renderer.bookDir = dir;
+    this.rtlProgressionState.set(this.isRtlProgression());
   }
 
   // A spread can open on the last page of the previous section, which is where the location
