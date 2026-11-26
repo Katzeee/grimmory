@@ -111,6 +111,8 @@ export class ReaderHeaderService {
       fontFamily: state.fontFamily,
       isDark: state.isDark,
       flow: state.flow,
+      folioWritingMode: state.writingMode,
+      folioPageDirection: state.pageDirection,
     };
     this.bookService.updateViewerSetting({ebookSettings: setting}, this.bookId).subscribe();
   }

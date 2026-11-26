@@ -152,22 +152,99 @@
           </div>
 
           <div class="control">
-            <span>{{ t('maxColumns') }}</span>
+            <span>{{ t('writingMode') }}</span>
             <div class="control-right">
-              <div class="stepper">
-                <button type="button" (click)="decreaseMaxColumnCount()">&#8722;</button>
-                <span>{{ state.maxColumnCount }}</span>
-                <button type="button" (click)="increaseMaxColumnCount()">+</button>
+              <div class="radio-group">
+                <label>
+                  <input
+                    type="radio"
+                    name="writingMode"
+                    value="auto"
+                    [checked]="state.writingMode === 'auto'"
+                    (change)="setWritingMode('auto')"
+                  />
+                  {{ t('bookDefault') }}
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    name="writingMode"
+                    value="horizontal"
+                    [checked]="state.writingMode === 'horizontal'"
+                    (change)="setWritingMode('horizontal')"
+                  />
+                  {{ t('horizontal') }}
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    name="writingMode"
+                    value="vertical"
+                    [checked]="state.writingMode === 'vertical'"
+                    (change)="setWritingMode('vertical')"
+                  />
+                  {{ t('vertical') }}
+                </label>
               </div>
             </div>
           </div>
 
           <div class="control">
+            <span>{{ t('pageDirection') }}</span>
+            <div class="control-right">
+              <div class="radio-group">
+                <label>
+                  <input
+                    type="radio"
+                    name="pageDirection"
+                    value="auto"
+                    [checked]="state.pageDirection === 'auto'"
+                    (change)="setPageDirection('auto')"
+                  />
+                  {{ t('bookDefault') }}
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    name="pageDirection"
+                    value="ltr"
+                    [checked]="state.pageDirection === 'ltr'"
+                    (change)="setPageDirection('ltr')"
+                  />
+                  {{ t('leftToRight') }}
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    name="pageDirection"
+                    value="rtl"
+                    [checked]="state.pageDirection === 'rtl'"
+                    (change)="setPageDirection('rtl')"
+                  />
+                  {{ t('rightToLeft') }}
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="control" [class.disabled]="vertical">
+            <span>{{ t('maxColumns') }}</span>
+            <div class="control-right">
+              <div class="stepper">
+                <button type="button" [disabled]="vertical" (click)="decreaseMaxColumnCount()">&#8722;</button>
+                <span>{{ state.maxColumnCount }}</span>
+                <button type="button" [disabled]="vertical" (click)="increaseMaxColumnCount()">+</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="control" [class.disabled]="vertical">
             <span>{{ t('columnGap') }}</span>
             <div class="control-right gap-control">
               <input
                 #gapInput
                 type="range"
+                [disabled]="vertical"
                 min="0"
                 max="0.5"
                 step="0.01"
@@ -178,19 +255,19 @@
             </div>
           </div>
 
-          <div class="control">
-            <span>{{ t('maxWidth') }}</span>
+          <div class="control" [class.disabled]="vertical">
+            <span>{{ t(vertical ? 'maxHeight' : 'maxWidth') }}</span>
             <div class="control-right">
               <div class="stepper">
-                <button type="button" (click)="decreaseMaxInlineSize()">&#8722;</button>
+                <button type="button" [disabled]="vertical" (click)="decreaseMaxInlineSize()">&#8722;</button>
                 <span>{{ state.maxInlineSize }}</span>
-                <button type="button" (click)="increaseMaxInlineSize()">+</button>
+                <button type="button" [disabled]="vertical" (click)="increaseMaxInlineSize()">+</button>
               </div>
             </div>
           </div>
 
           <div class="control">
-            <span>{{ t('maxHeight') }}</span>
+            <span>{{ t(vertical ? 'maxWidth' : 'maxHeight') }}</span>
             <div class="control-right">
               <div class="stepper">
                 <button type="button" (click)="decreaseMaxBlockSize()">&#8722;</button>

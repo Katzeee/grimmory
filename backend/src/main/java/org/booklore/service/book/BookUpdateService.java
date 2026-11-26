@@ -156,6 +156,8 @@ public class BookUpdateService {
         prefs.setMaxInlineSize(epubSettings.getMaxInlineSize());
         prefs.setTheme(epubSettings.getTheme());
         prefs.setFlow(epubSettings.getFlow());
+        prefs.setFolioWritingMode(epubSettings.getFolioWritingMode());
+        prefs.setFolioPageDirection(epubSettings.getFolioPageDirection());
 
         ebookViewerPreferenceRepository.save(prefs);
     }

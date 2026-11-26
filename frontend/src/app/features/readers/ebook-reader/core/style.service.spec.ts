@@ -52,6 +52,8 @@ describe('ReaderStyleService', () => {
       isDark: true,
       flow: 'paginated',
       tapToTurnPage: true,
+      writingMode: 'auto',
+      pageDirection: 'auto',
     });
 
     expect(epubCustomFontService.getCustomFontById).toHaveBeenCalledWith(7);
@@ -78,6 +80,8 @@ describe('ReaderStyleService', () => {
       isDark: false,
       flow: 'scrolled',
       tapToTurnPage: true,
+      writingMode: 'auto',
+      pageDirection: 'auto',
     });
 
     expect(epubCustomFontService.getCustomFontById).not.toHaveBeenCalled();
@@ -108,6 +112,8 @@ describe('ReaderStyleService', () => {
       isDark: true,
       flow: 'paginated',
       tapToTurnPage: true,
+      writingMode: 'auto',
+      pageDirection: 'auto',
     });
 
     expect(renderer.setAttribute).toHaveBeenCalledWith('max-column-count', 3);
@@ -133,6 +139,8 @@ describe('ReaderStyleService', () => {
       isDark: true,
       flow: 'scrolled',
       tapToTurnPage: true,
+      writingMode: 'auto',
+      pageDirection: 'auto',
     });
 
     for (const side of ['top', 'right', 'bottom', 'left']) {
@@ -152,6 +160,8 @@ describe('ReaderStyleService', () => {
       isDark: true,
       flow: 'scrolled',
       tapToTurnPage: true,
+      writingMode: 'auto',
+      pageDirection: 'auto',
     })).not.toThrow();
   });
 });

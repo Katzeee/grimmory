@@ -188,6 +188,8 @@ export interface EbookReaderSetting {
   isDark: boolean;
   flow: 'paginated' | 'scrolled';
   tapToTurnPage?: boolean;
+  folioWritingMode?: 'auto' | 'horizontal' | 'vertical';
+  folioPageDirection?: 'auto' | 'ltr' | 'rtl';
 }
 
 export interface EpubReaderSetting {

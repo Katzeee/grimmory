@@ -357,6 +357,8 @@ export interface EbookViewerSetting {
   isDark: boolean;
   flow: 'paginated' | 'scrolled';
   tapToTurnPage?: boolean;
+  folioWritingMode?: 'auto' | 'horizontal' | 'vertical';
+  folioPageDirection?: 'auto' | 'ltr' | 'rtl';
 }
 
 export interface CbxViewerSetting {

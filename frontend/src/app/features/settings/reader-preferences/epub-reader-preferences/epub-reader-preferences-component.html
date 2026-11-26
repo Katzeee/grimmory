@@ -226,6 +226,80 @@
       <div class="setting-item">
         <div class="setting-info">
           <div class="setting-label-row">
+            <span class="setting-label">{{ t('writingMode') }}</span>
+            <div class="button-group">
+              <button
+                type="button"
+                class="option-button"
+                [class.selected]="writingMode === 'auto'"
+                (click)="writingMode = 'auto'">
+                <i class="pi pi-book"></i>
+                <span class="option-text">{{ t('bookDefault') }}</span>
+              </button>
+              <button
+                type="button"
+                class="option-button"
+                [class.selected]="writingMode === 'horizontal'"
+                (click)="writingMode = 'horizontal'">
+                <i class="pi pi-align-left"></i>
+                <span class="option-text">{{ t('horizontal') }}</span>
+              </button>
+              <button
+                type="button"
+                class="option-button"
+                [class.selected]="writingMode === 'vertical'"
+                (click)="writingMode = 'vertical'">
+                <i class="pi pi-align-justify"></i>
+                <span class="option-text">{{ t('vertical') }}</span>
+              </button>
+            </div>
+          </div>
+          <p class="setting-description">
+            {{ t('writingModeDesc') }}
+          </p>
+        </div>
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-info">
+          <div class="setting-label-row">
+            <span class="setting-label">{{ t('pageDirection') }}</span>
+            <div class="button-group">
+              <button
+                type="button"
+                class="option-button"
+                [class.selected]="pageDirection === 'auto'"
+                (click)="pageDirection = 'auto'">
+                <i class="pi pi-book"></i>
+                <span class="option-text">{{ t('bookDefault') }}</span>
+              </button>
+              <button
+                type="button"
+                class="option-button"
+                [class.selected]="pageDirection === 'ltr'"
+                (click)="pageDirection = 'ltr'">
+                <i class="pi pi-arrow-right"></i>
+                <span class="option-text">{{ t('leftToRight') }}</span>
+              </button>
+              <button
+                type="button"
+                class="option-button"
+                [class.selected]="pageDirection === 'rtl'"
+                (click)="pageDirection = 'rtl'">
+                <i class="pi pi-arrow-left"></i>
+                <span class="option-text">{{ t('rightToLeft') }}</span>
+              </button>
+            </div>
+          </div>
+          <p class="setting-description">
+            {{ t('pageDirectionDesc') }}
+          </p>
+        </div>
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-info">
+          <div class="setting-label-row">
             <span class="setting-label">{{ t('maxColumns') }}</span>
             <div class="font-size-controls">
               <p-button icon="pi pi-minus" size="small" rounded outlined (click)="maxColumnCount = maxColumnCount > 1 ? maxColumnCount - 1 : 1" />

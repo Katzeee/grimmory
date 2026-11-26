@@ -24,5 +24,7 @@ public class EbookViewerPreferences {
     private Integer maxInlineSize;
     private String theme;
     private String flow;
+    private String folioWritingMode;
+    private String folioPageDirection;
 }
 

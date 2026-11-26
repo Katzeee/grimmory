@@ -1,11 +1,11 @@
-import {inject, Service} from '@angular/core';
+import {inject, Service, signal} from '@angular/core';
 import {defer, from, Observable, of, throwError, timer} from 'rxjs';
 import {catchError, map, switchMap} from 'rxjs/operators';
 import {ReaderAnnotationService, Annotation} from '../features/annotations/annotation-renderer.service';
 import {ReaderEventService, ViewEvent, TextSelection} from './event.service';
 import {PageInfo, ThemeInfo, PageDecorator} from '../shared/header-footer.util';
 import {EpubStreamingService, EpubBookInfo} from './epub-streaming.service';
-import {ReaderStateService} from '../state/reader-state.service';
+import {ReaderPageDirection, ReaderStateService} from '../state/reader-state.service';
 
 export type {ViewEvent, TextSelection} from './event.service';
 export type {PageInfo, ThemeInfo} from '../shared/header-footer.util';
@@ -43,12 +43,20 @@ export interface FoliateRenderer {
   heads?: HTMLElement[];
   feet?: HTMLElement[];
   getContents(): RendererContent[];
+  getAttribute(name: string): string | null;
   setAttribute(name: string, value: string | number): void;
   removeAttribute(name: string): void;
   setStyles?(css: string): void;
+  bookDir?: string;
+  primaryIndex?: number;
+  scrolled?: boolean;
+  scrollProp?: string;
+  containerPosition?: number;
+  addEventListener?(type: 'relocate', listener: (event: CustomEvent<{ reason?: string }>) => void): void;
 }
 
 interface FoliateBook {
+  dir?: string;
   toc?: FoliateTocItem[];
   metadata?: BookMetadata;
   getCover?(): Promise<Blob | null> | null;
@@ -78,7 +86,9 @@ interface FoliateViewElement extends HTMLElement {
   isFixedLayout: boolean;
   renderer?: FoliateRenderer | null;
   book?: FoliateBook;
+  lastLocation?: { cfi?: string; section?: { current: number } } | null;
   open(target: File | object): Promise<void>;
+  close(): void;
   goTo(target: string | number): Promise<void>;
   goToFraction(fraction: number): Promise<void>;
   prev(): void;
@@ -105,6 +115,9 @@ interface StreamingLoaderModule {
 
 const STREAMING_LOADER_URL = '/assets/foliate/streaming-loader.js';
 
+// Renderer relocations that move the reader away from where a relayout anchored it.
+const READER_MOVE_REASONS = new Set(['page', 'snap', 'scroll', 'selection']);
+
 @Service()
 export class ReaderViewManagerService {
   private readonly annotationService = inject(ReaderAnnotationService);
@@ -112,6 +125,13 @@ export class ReaderViewManagerService {
   private readonly epubStreamingService = inject(EpubStreamingService);
   private readonly readerStateService = inject(ReaderStateService);
   private view: FoliateViewElement | null = null;
+  private declaredBookDir: string | undefined;
+  private readonly verticalWritingState = signal(false);
+  // The writing mode of the section on screen, as last measured by isVerticalWriting.
+  readonly verticalWriting = this.verticalWritingState.asReadonly();
+  // Where relayouts reopen the book until the reader moves, so repeated relayouts don't drift
+  // to the start of whatever spread the previous layout paired the position into.
+  private relayoutAnchor: string | number | null = null;
 
   public get events$(): Observable<ViewEvent> {
     return this.eventService.events$;
@@ -129,7 +149,8 @@ export class ReaderViewManagerService {
       next: () => this.next(),
       getCFI: (index: number, range: Range) => this.view?.getCFI(index, range) ?? null,
       getContents: () => this.view?.renderer?.getContents() ?? null,
-      isTapToTurnEnabled: () => this.readerStateService.state().tapToTurnPage
+      isTapToTurnEnabled: () => this.readerStateService.state().tapToTurnPage,
+      isRtlProgression: () => this.isRtlProgression()
     });
   }
 
@@ -153,7 +174,9 @@ export class ReaderViewManagerService {
         });
         return from(view.open(file));
       }),
-      map(() => undefined),
+      map(() => {
+        this.declaredBookDir = view.book?.dir;
+      }),
       catchError(err => throwError(() => err))
     );
   }
@@ -180,6 +203,76 @@ export class ReaderViewManagerService {
       throw new Error('View not created');
     }
     await view.open(book);
+    this.declaredBookDir = view.book?.dir;
+  }
+
+  /**
+   * Overrides the page progression the book declares. The renderer reads it when it lays out
+   * pages, so it applies from the next navigation; `reopen` applies it to an open book.
+   */
+  setPageDirection(direction: ReaderPageDirection): void {
+    const book = this.view?.book;
+    const renderer = this.view?.renderer;
+    if (!book || !renderer) return;
+    const dir = direction === 'auto' ? this.declaredBookDir : direction;
+    book.dir = dir;
+    renderer.bookDir = dir;
+  }
+
+  // A spread can open on the last page of the previous section, which is where the location
+  // points; the section being read is the renderer's primary one, from its start.
+  private readingAnchor(view: FoliateViewElement): string | number | null {
+    const location = view.lastLocation;
+    const primaryIndex = view.renderer?.primaryIndex;
+    if (primaryIndex != null && location?.section && location.section.current !== primaryIndex) {
+      return primaryIndex;
+    }
+    return location?.cfi ?? null;
+  }
+
+  isVerticalWriting(): boolean {
+    const renderer = this.view?.renderer;
+    if (!renderer) return false;
+    const contents = renderer.getContents();
+    const content = contents.find(item => item.index === renderer.primaryIndex) ?? contents.at(0);
+    // A section's document has no body while it is still loading.
+    const body = content?.doc.querySelector('body');
+    const win = content?.doc.defaultView;
+    if (!body || !win) return false;
+    const vertical = win.getComputedStyle(body).writingMode.startsWith('vertical');
+    this.verticalWritingState.set(vertical);
+    return vertical;
+  }
+
+  isRtlProgression(): boolean {
+    const dir = this.view?.book?.dir;
+    if (dir === 'rtl' || dir === 'ltr') return dir === 'rtl';
+    const doc = this.view?.renderer?.getContents()[0]?.doc;
+    if (!doc?.body) return false;
+    const style = doc.defaultView?.getComputedStyle(doc.body);
+    return style?.writingMode === 'vertical-rl' || style?.direction === 'rtl';
+  }
+
+  /**
+   * Lays the open book out again from the current position. Writing mode and page progression
+   * are read when a section loads, so changing either takes a fresh renderer. `prepare` runs on
+   * the new renderer before it navigates.
+   */
+  reopen(prepare: () => void): Observable<void> {
+    const view = this.view;
+    const book = view?.book;
+    if (!view || !book) return of(undefined);
+    const anchor = this.relayoutAnchor ?? this.readingAnchor(view);
+    this.relayoutAnchor = anchor;
+    return defer(async () => {
+      view.close();
+      await view.open(book);
+      view.renderer?.addEventListener?.('relocate', event => {
+        if (READER_MOVE_REASONS.has(event.detail.reason ?? '')) this.relayoutAnchor = null;
+      });
+      prepare();
+      await view.goTo(anchor ?? 0);
+    });
   }
 
   destroy(): void {
@@ -194,6 +287,7 @@ export class ReaderViewManagerService {
       return of(undefined);
     }
     const view = this.view;
+    this.relayoutAnchor = null;
     return defer(() =>
       from(view.goTo(resolvedTarget))
     ).pipe(
@@ -210,6 +304,7 @@ export class ReaderViewManagerService {
       return of(undefined);
     }
     const view = this.view;
+    this.relayoutAnchor = null;
     return defer(() => from(view.goToFraction(fraction))).pipe(
       map(() => undefined)
     );

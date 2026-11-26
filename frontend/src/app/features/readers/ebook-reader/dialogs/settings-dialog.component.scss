@@ -422,6 +422,10 @@
   }
 }
 
+.control.disabled {
+  opacity: 0.4;
+}
+
 .control-right {
   display: flex;
   align-items: center;

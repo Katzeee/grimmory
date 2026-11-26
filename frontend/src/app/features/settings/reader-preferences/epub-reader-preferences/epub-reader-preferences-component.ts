@@ -190,6 +190,24 @@ export class EpubReaderPreferencesComponent {
     this.readerPreferencesService.updatePreference(['ebookReaderSetting', 'flow'], value);
   }
 
+  get writingMode(): 'auto' | 'horizontal' | 'vertical' {
+    return this.userSettings().ebookReaderSetting.folioWritingMode ?? 'auto';
+  }
+
+  set writingMode(value: 'auto' | 'horizontal' | 'vertical') {
+    this.userSettings().ebookReaderSetting.folioWritingMode = value;
+    this.readerPreferencesService.updatePreference(['ebookReaderSetting', 'folioWritingMode'], value);
+  }
+
+  get pageDirection(): 'auto' | 'ltr' | 'rtl' {
+    return this.userSettings().ebookReaderSetting.folioPageDirection ?? 'auto';
+  }
+
+  set pageDirection(value: 'auto' | 'ltr' | 'rtl') {
+    this.userSettings().ebookReaderSetting.folioPageDirection = value;
+    this.readerPreferencesService.updatePreference(['ebookReaderSetting', 'folioPageDirection'], value);
+  }
+
   get tapToTurnPage(): boolean {
     return this.userSettings().ebookReaderSetting.tapToTurnPage ?? true;
   }

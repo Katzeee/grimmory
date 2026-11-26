@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, CUSTOM_ELEMENTS_SCHEMA, DestroyRef, effect, HostListener, inject, OnInit, signal, ViewChild} from '@angular/core';
+import {ChangeDetectionStrategy, Component, CUSTOM_ELEMENTS_SCHEMA, DestroyRef, effect, HostListener, inject, OnInit, signal, untracked, ViewChild} from '@angular/core';
 import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
 import {forkJoin, from, Observable, of, throwError} from 'rxjs';
 import {catchError, map, switchMap, tap} from 'rxjs/operators';
@@ -109,12 +109,14 @@ export class EbookReaderComponent implements OnInit {
   protected altBookType?: string;
 
   private hasLoadedOnce = false;
+  private appliedPageLayout: string | null = null;
   private _fileUrl: string | null = null;
   private visibilityManager!: ReaderHeaderFooterVisibilityManager;
   private relocateTimeout?: ReturnType<typeof setTimeout>;
   private sectionFractionsTimeout?: ReturnType<typeof setTimeout>;
   private pendingInitialChapterRestore: PendingInitialChapterRestore | null = null;
   private pendingInitialChapterRestoreTimeout?: ReturnType<typeof setTimeout>;
+  private maxInlineSizeTimeout?: ReturnType<typeof setTimeout>;
 
   @ViewChild(TextSelectionPopupComponent, {static: true})
   private readonly selectionPopup!: TextSelectionPopupComponent;
@@ -157,6 +159,7 @@ export class EbookReaderComponent implements OnInit {
       if (this.relocateTimeout) clearTimeout(this.relocateTimeout);
       if (this.sectionFractionsTimeout) clearTimeout(this.sectionFractionsTimeout);
       if (this.pendingInitialChapterRestoreTimeout) clearTimeout(this.pendingInitialChapterRestoreTimeout);
+      clearTimeout(this.maxInlineSizeTimeout);
 
       if (this._fileUrl) {
         URL.revokeObjectURL(this._fileUrl);
@@ -167,6 +170,19 @@ export class EbookReaderComponent implements OnInit {
     effect(() => {
       this.stateService.state();
       this.applyStyles();
+    });
+
+    effect(() => {
+      const {writingMode, pageDirection} = this.stateService.state();
+      const pageLayout = `${writingMode}:${pageDirection}`;
+      untracked(() => {
+        if (this.appliedPageLayout !== null && this.appliedPageLayout !== pageLayout && !this.isLoading()) {
+          this.viewManager.reopen(() => this.applyStyles())
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe();
+        }
+        this.appliedPageLayout = pageLayout;
+      });
     });
 
     effect(() => {
@@ -536,7 +552,8 @@ export class EbookReaderComponent implements OnInit {
     const renderer = this.viewManager.getRenderer();
     if (renderer) {
       const state = this.stateService.state();
-      this.styleService.applyStylesToRenderer(renderer, state);
+      this.styleService.applyStylesToRenderer(renderer, state, this.viewManager.isVerticalWriting());
+      this.viewManager.setPageDirection(state.pageDirection);
       if (state.flow) {
         renderer.setAttribute?.('flow', state.flow);
       }
@@ -592,6 +609,19 @@ export class EbookReaderComponent implements OnInit {
   @HostListener('window:resize')
   onWindowResize(): void {
     this.visibilityManager.updateWindowHeight(window.innerHeight);
+    clearTimeout(this.maxInlineSizeTimeout);
+    this.maxInlineSizeTimeout = setTimeout(() => this.applyMaxInlineSize(), 150);
+  }
+
+  // Vertical lines follow the window's longer axis. Each write re-lays out the page, so only a
+  // changed size is written, once a resize settles.
+  private applyMaxInlineSize(): void {
+    const renderer = this.viewManager.getRenderer();
+    if (!renderer) return;
+    const size = this.styleService.maxInlineSize(this.stateService.state(), this.viewManager.isVerticalWriting());
+    if (renderer.getAttribute('max-inline-size') !== size) {
+      renderer.setAttribute('max-inline-size', size);
+    }
   }
 
   onHeaderTriggerZoneEnter(): void {

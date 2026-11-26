@@ -92,6 +92,8 @@ public class DefaultUserSettingsProvider {
                 .theme("gray")
                 .flow("paginated")
                 .tapToTurnPage(true)
+                .folioWritingMode("auto")
+                .folioPageDirection("auto")
                 .build();
     }
 

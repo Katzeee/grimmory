@@ -13,7 +13,7 @@ export class ReaderStyleService {
   private readonly epubCustomFontService = inject(EpubCustomFontService);
 
   generateCSS(state: ReaderState): string {
-    const {lineHeight, justify, hyphenate, fontSize, theme, fontFamily} = state;
+    const {lineHeight, justify, hyphenate, fontSize, theme, fontFamily, writingMode} = state;
     const userStylesheet = '';
     const overrideFont = false;
     const mediaActiveClass = 'media-active';
@@ -50,9 +50,15 @@ export class ReaderStyleService {
             font-family: inherit !important;
         }` : '';
 
+    // Books set their writing mode on the root, on body, or on a wrapper just inside it.
+    const writingModeRule = writingMode === 'auto' ? '' : `
+        html, body, body > * {
+            writing-mode: ${writingMode === 'vertical' ? 'vertical-rl' : 'horizontal-tb'} !important;
+        }`;
+
     return `
       ${fontFaceRule}
-      @namespace epub "http://www.idpf.org/2007/ops";
+      @namespace epub "http://www.idpf.org/2007/ops";${writingModeRule}
       @media print {
           html {
               column-width: auto !important;
@@ -179,12 +185,21 @@ export class ReaderStyleService {
     return !isNaN(id) && id.toString() === fontFamily ? id : null;
   }
 
-  applyStylesToRenderer(renderer: ReaderRenderer | null | undefined, state: ReaderState): void {
+  // The renderer splits a vertical page into stacked tiers once the page is taller than the max
+  // inline size, so vertical lines take the longer window axis and run the full page height.
+  maxInlineSize(state: ReaderState, vertical: boolean): string {
+    const size = vertical
+      ? Math.max(window.innerWidth, window.innerHeight, state.maxInlineSize)
+      : state.maxInlineSize;
+    return `${size}px`;
+  }
+
+  applyStylesToRenderer(renderer: ReaderRenderer | null | undefined, state: ReaderState, vertical = false): void {
     if (!renderer) return;
 
     renderer.setAttribute('max-column-count', state.maxColumnCount);
     renderer.setAttribute('gap', `${state.gap * 100}%`);
-    renderer.setAttribute('max-inline-size', `${state.maxInlineSize}px`);
+    renderer.setAttribute('max-inline-size', this.maxInlineSize(state, vertical));
     renderer.setAttribute('max-block-size', `${state.maxBlockSize}px`);
     if (typeof renderer.setStyles === 'function') {
       const css = this.generateCSS(state);

@@ -131,12 +131,16 @@ class BookUpdateServiceTest {
                         .maxInlineSize(1200)
                         .theme("dark")
                         .flow("paginated")
+                        .folioWritingMode("vertical")
+                        .folioPageDirection("rtl")
                         .build())
                 .build();
 
         bookUpdateService.updateBookViewerSetting(bookId, settings);
 
         verify(ebookViewerPreferenceRepository).save(epubPrefs);
+        assertEquals("vertical", epubPrefs.getFolioWritingMode());
+        assertEquals("rtl", epubPrefs.getFolioPageDirection());
         assertEquals("serif", epubPrefs.getFontFamily());
         assertEquals(18, epubPrefs.getFontSize());
         assertEquals(0.1f, epubPrefs.getGap());

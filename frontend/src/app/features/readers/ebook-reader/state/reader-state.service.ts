@@ -6,6 +6,9 @@ import {BookService} from '../../../book/service/book.service';
 import {UserService} from '../../../settings/user-management/user.service';
 import {EpubCustomFontService} from '../features/fonts/custom-font.service';
 
+export type ReaderWritingMode = 'auto' | 'horizontal' | 'vertical';
+export type ReaderPageDirection = 'auto' | 'ltr' | 'rtl';
+
 export interface ReaderState {
   lineHeight: number;
   justify: boolean;
@@ -20,6 +23,8 @@ export interface ReaderState {
   isDark: boolean;
   flow: 'paginated' | 'scrolled';
   tapToTurnPage: boolean;
+  writingMode: ReaderWritingMode;
+  pageDirection: ReaderPageDirection;
 }
 
 interface LegacyViewerSetting {
@@ -59,6 +64,8 @@ export class ReaderStateService {
     isDark: true,
     flow: 'paginated',
     tapToTurnPage: true,
+    writingMode: 'auto',
+    pageDirection: 'auto',
   };
 
   private readonly _state = signal<ReaderState>(this.defaultState);
@@ -133,6 +140,8 @@ export class ReaderStateService {
         if (settings.isDark != null) newState.isDark = settings.isDark;
        newState.tapToTurnPage = globalSettings.tapToTurnPage ?? true;
         if (settings.flow) newState.flow = settings.flow;
+        if (settings.folioWritingMode) newState.writingMode = settings.folioWritingMode;
+        if (settings.folioPageDirection) newState.pageDirection = settings.folioPageDirection;
         if (settings.theme) {
           const theme = this.themes.find(t => t.name === settings.theme);
           if (theme) {
@@ -240,6 +249,14 @@ export class ReaderStateService {
 
   setTapToTurnPage(enabled: boolean): void {
     this.updateState({tapToTurnPage: enabled});
+  }
+
+  setWritingMode(writingMode: ReaderWritingMode): void {
+    this.updateState({writingMode});
+  }
+
+  setPageDirection(pageDirection: ReaderPageDirection): void {
+    this.updateState({pageDirection});
   }
 
   private updateState(partial: Partial<ReaderState>): void {

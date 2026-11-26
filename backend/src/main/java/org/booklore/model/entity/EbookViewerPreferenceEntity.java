@@ -59,5 +59,11 @@ public class EbookViewerPreferenceEntity {
 
     @Column(name = "flow", nullable = false)
     private String flow;
+
+    @Column(name = "folio_writing_mode")
+    private String folioWritingMode;
+
+    @Column(name = "folio_page_direction")
+    private String folioPageDirection;
 }
 

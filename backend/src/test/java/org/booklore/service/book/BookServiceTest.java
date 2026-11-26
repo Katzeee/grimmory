@@ -172,6 +172,8 @@ class BookServiceTest {
         epubPref.setMaxColumnCount(2);
         epubPref.setMaxInlineSize(1200);
         epubPref.setTheme("light");
+        epubPref.setFolioWritingMode("horizontal");
+        epubPref.setFolioPageDirection("ltr");
         when(ebookViewerPreferenceRepository.findByBookIdAndUserId(4L, testUser.getId())).thenReturn(Optional.of(epubPref));
         when(authenticationService.getAuthenticatedUser()).thenReturn(testUser);
 
@@ -189,6 +191,8 @@ class BookServiceTest {
         assertEquals(2, settings.getEbookSettings().getMaxColumnCount());
         assertEquals(1200, settings.getEbookSettings().getMaxInlineSize());
         assertEquals("light", settings.getEbookSettings().getTheme());
+        assertEquals("horizontal", settings.getEbookSettings().getFolioWritingMode());
+        assertEquals("ltr", settings.getEbookSettings().getFolioPageDirection());
     }
 
     @Test

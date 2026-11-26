@@ -53,6 +53,7 @@ interface IframeClickMessage {
 
 interface EventServiceView extends HTMLElement {
   isFixedLayout: boolean;
+  renderer?: { scrolled?: boolean; scrollProp?: string; containerPosition?: number } | null;
   addAnnotation(annotation: { value: string }): void;
 }
 
@@ -81,6 +82,7 @@ interface ViewCallbacks {
   getCFI: (index: number, range: Range) => string | null;
   getContents: () => { index: number; doc: Document }[] | null;
   isTapToTurnEnabled?: () => boolean;
+  isRtlProgression?: () => boolean;
 }
 
 @Service()
@@ -207,10 +209,16 @@ export class ReaderEventService {
         return;
       }
       const k = event.key;
-      if (k === 'ArrowLeft' || k === 'PageUp') {
+      if (k === 'ArrowLeft') {
+        this.turnLeft();
+        event.preventDefault();
+      } else if (k === 'ArrowRight') {
+        this.turnRight();
+        event.preventDefault();
+      } else if (k === 'PageUp') {
         this.viewCallbacks?.prev();
         event.preventDefault();
-      } else if (k === 'ArrowRight' || k === 'PageDown') {
+      } else if (k === 'PageDown') {
         this.viewCallbacks?.next();
         event.preventDefault();
       } else if (k === ' ' && event.shiftKey) {
@@ -292,6 +300,11 @@ export class ReaderEventService {
         return;
       }
 
+      // The click that ends a drag selection selected text rather than tapping the page
+      if (doc.defaultView?.getSelection()?.isCollapsed === false) {
+        return;
+      }
+
       const iframe = doc.defaultView?.frameElement as HTMLIFrameElement | null;
       if (!iframe) return;
 
@@ -325,6 +338,11 @@ export class ReaderEventService {
     track(doc, 'selectionchange', () => {
       this.handleSelectionChange(doc);
     });
+
+    // SAFETY: the listener is registered for 'wheel', which only dispatches WheelEvent.
+    track(doc, 'wheel', ((event: WheelEvent) => {
+      this.handleWheel(event, doc);
+    }) as EventListener, {passive: false});
 
     this.injectMobileSelectionStyles(doc);
   }
@@ -428,9 +446,9 @@ export class ReaderEventService {
 
         this.isNavigating = true;
         if (deltaX < 0) {
-          this.viewCallbacks?.next();
+          this.turnRight();
         } else {
-          this.viewCallbacks?.prev();
+          this.turnLeft();
         }
         setTimeout(() => this.isNavigating = false, 300);
         return;
@@ -615,14 +633,42 @@ export class ReaderEventService {
 
     if (x < leftThreshold && tapToTurnEnabled) {
       this.isNavigating = true;
-      this.viewCallbacks?.prev();
+      this.turnLeft();
       setTimeout(() => this.isNavigating = false, 300);
     } else if (x > rightThreshold && tapToTurnEnabled) {
       this.isNavigating = true;
-      this.viewCallbacks?.next();
+      this.turnRight();
       setTimeout(() => this.isNavigating = false, 300);
     } else {
       this.eventSubject.next({type: 'middle-single-tap'});
+    }
+  }
+
+  // A vertical book in scrolled flow scrolls sideways, which a mouse wheel does not reach.
+  private handleWheel(event: WheelEvent, doc: Document): void {
+    const renderer = this.view?.renderer;
+    if (!renderer?.scrolled || renderer.scrollProp !== 'scrollLeft' || renderer.containerPosition == null) return;
+    if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
+    event.preventDefault();
+    const delta = event.deltaMode === WheelEvent.DOM_DELTA_LINE ? event.deltaY * 16 : event.deltaY;
+    const leftToRight = doc.defaultView?.getComputedStyle(doc.body).writingMode === 'vertical-lr';
+    renderer.containerPosition += leftToRight ? delta : -delta;
+  }
+
+  // Pages advance toward the left when the book progresses right to left.
+  private turnLeft(): void {
+    if (this.viewCallbacks?.isRtlProgression?.()) {
+      this.viewCallbacks.next();
+    } else {
+      this.viewCallbacks?.prev();
+    }
+  }
+
+  private turnRight(): void {
+    if (this.viewCallbacks?.isRtlProgression?.()) {
+      this.viewCallbacks.prev();
+    } else {
+      this.viewCallbacks?.next();
     }
   }
 }

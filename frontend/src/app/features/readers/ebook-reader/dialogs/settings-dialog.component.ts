@@ -1,7 +1,7 @@
 import {Component, inject, Input, OnInit, output, Renderer2} from '@angular/core';
 import {DecimalPipe, DOCUMENT} from '@angular/common';
 import {TranslocoDirective} from '@jsverse/transloco';
-import {ReaderStateService} from '../state/reader-state.service';
+import {ReaderPageDirection, ReaderStateService, ReaderWritingMode} from '../state/reader-state.service';
 import {ReaderViewManagerService} from '../core/view-manager.service';
 import {BookService} from '../../../book/service/book.service';
 import {EbookViewerSetting} from '../../../book/model/book.model';
@@ -56,6 +56,11 @@ export class ReaderSettingsDialogComponent implements OnInit {
     return this.stateService.state();
   }
 
+  // Vertical pages hold one full-height column, so only the block size still shapes them.
+  get vertical() {
+    return this.viewManager.verticalWriting();
+  }
+
   get themes() {
     return this.stateService.themes;
   }
@@ -78,6 +83,8 @@ export class ReaderSettingsDialogComponent implements OnInit {
       fontFamily: this.state.fontFamily,
       isDark: this.state.isDark,
       flow: this.state.flow,
+      folioWritingMode: this.state.writingMode,
+      folioPageDirection: this.state.pageDirection,
     };
     this.bookService.updateViewerSetting({ebookSettings: setting}, this.bookId).subscribe();
   }
@@ -166,6 +173,16 @@ export class ReaderSettingsDialogComponent implements OnInit {
   setFlow(flow: 'paginated' | 'scrolled') {
     this.stateService.setFlow(flow);
     this.viewManager.getRenderer()?.setAttribute?.('flow', flow);
+    this.syncSettingsToBackend();
+  }
+
+  setWritingMode(writingMode: ReaderWritingMode) {
+    this.stateService.setWritingMode(writingMode);
+    this.syncSettingsToBackend();
+  }
+
+  setPageDirection(pageDirection: ReaderPageDirection) {
+    this.stateService.setPageDirection(pageDirection);
     this.syncSettingsToBackend();
   }
 

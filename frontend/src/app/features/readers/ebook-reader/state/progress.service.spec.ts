@@ -15,6 +15,7 @@ describe('ReaderProgressService', () => {
     heads: [],
     feet: [],
     getContents: vi.fn(() => []),
+    getAttribute: vi.fn(() => null),
     setAttribute: vi.fn(),
     removeAttribute: vi.fn(),
   };
