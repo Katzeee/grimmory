@@ -62,8 +62,13 @@ export class ReaderStyleService {
       shown: '',
       dimmed: `
         rt { opacity: 0.4; }`,
+      // A dotted underline marks the words whose reading a tap reveals.
       tap: `
         rt { visibility: hidden; }
+        ruby:not(.${RUBY_REVEALED_CLASS}) {
+            text-decoration: underline dotted rgb(160 160 160 / 80%);
+            text-underline-offset: 0.05em;
+        }
         ruby.${RUBY_REVEALED_CLASS} rt { visibility: visible; }
         @media (hover: hover) {
             ruby:hover rt { visibility: visible; }
