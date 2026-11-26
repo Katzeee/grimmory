@@ -5,6 +5,7 @@ import {FormsModule} from '@angular/forms';
 import {TranslocoDirective} from '@jsverse/transloco';
 import {ReaderPreferencesService} from '../reader-preferences.service';
 import {UserSettings} from '../../user-management/user.service';
+import {FolioReaderSettings} from '../../../book/model/book.model';
 import {Tooltip} from '@openng/optimus-ui/tooltip';
 import {CustomFontService} from '../../../../shared/service/custom-font.service';
 import {addCustomFontsToDropdown, FontPreferenceItem} from '../../../../shared/util/custom-font.util';
@@ -190,31 +191,38 @@ export class EpubReaderPreferencesComponent {
     this.readerPreferencesService.updatePreference(['ebookReaderSetting', 'flow'], value);
   }
 
-  get writingMode(): 'auto' | 'horizontal' | 'vertical' {
-    return this.userSettings().ebookReaderSetting.folioWritingMode ?? 'auto';
+  private get folio(): FolioReaderSettings {
+    return this.userSettings().ebookReaderSetting.folio ?? {};
   }
 
-  set writingMode(value: 'auto' | 'horizontal' | 'vertical') {
-    this.userSettings().ebookReaderSetting.folioWritingMode = value;
-    this.readerPreferencesService.updatePreference(['ebookReaderSetting', 'folioWritingMode'], value);
+  private setFolio(change: FolioReaderSettings): void {
+    const folio = {...this.folio, ...change};
+    this.userSettings().ebookReaderSetting.folio = folio;
+    this.readerPreferencesService.updatePreference(['ebookReaderSetting', 'folio'], folio);
   }
 
-  get pageDirection(): 'auto' | 'ltr' | 'rtl' {
-    return this.userSettings().ebookReaderSetting.folioPageDirection ?? 'auto';
+  get writingMode(): Required<FolioReaderSettings>['writingMode'] {
+    return this.folio.writingMode ?? 'auto';
   }
 
-  set pageDirection(value: 'auto' | 'ltr' | 'rtl') {
-    this.userSettings().ebookReaderSetting.folioPageDirection = value;
-    this.readerPreferencesService.updatePreference(['ebookReaderSetting', 'folioPageDirection'], value);
+  set writingMode(writingMode: Required<FolioReaderSettings>['writingMode']) {
+    this.setFolio({writingMode});
   }
 
-  get cjkFont(): 'auto' | 'noto-serif' {
-    return this.userSettings().ebookReaderSetting.folioCjkFont ?? 'auto';
+  get pageDirection(): Required<FolioReaderSettings>['pageDirection'] {
+    return this.folio.pageDirection ?? 'auto';
   }
 
-  set cjkFont(value: 'auto' | 'noto-serif') {
-    this.userSettings().ebookReaderSetting.folioCjkFont = value;
-    this.readerPreferencesService.updatePreference(['ebookReaderSetting', 'folioCjkFont'], value);
+  set pageDirection(pageDirection: Required<FolioReaderSettings>['pageDirection']) {
+    this.setFolio({pageDirection});
+  }
+
+  get cjkFont(): Required<FolioReaderSettings>['cjkFont'] {
+    return this.folio.cjkFont ?? 'auto';
+  }
+
+  set cjkFont(cjkFont: Required<FolioReaderSettings>['cjkFont']) {
+    this.setFolio({cjkFont});
   }
 
   get tapToTurnPage(): boolean {

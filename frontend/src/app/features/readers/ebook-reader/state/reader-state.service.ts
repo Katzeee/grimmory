@@ -4,11 +4,12 @@ import {map, tap} from 'rxjs/operators';
 import {Theme, themes} from './themes.constant';
 import {BookService} from '../../../book/service/book.service';
 import {UserService} from '../../../settings/user-management/user.service';
+import {FolioReaderSettings} from '../../../book/model/book.model';
 import {EpubCustomFontService} from '../features/fonts/custom-font.service';
 
-export type ReaderWritingMode = 'auto' | 'horizontal' | 'vertical';
-export type ReaderPageDirection = 'auto' | 'ltr' | 'rtl';
-export type ReaderCjkFont = 'auto' | 'noto-serif';
+export type ReaderWritingMode = Required<FolioReaderSettings>['writingMode'];
+export type ReaderPageDirection = Required<FolioReaderSettings>['pageDirection'];
+export type ReaderCjkFont = Required<FolioReaderSettings>['cjkFont'];
 
 export interface ReaderState {
   lineHeight: number;
@@ -27,6 +28,11 @@ export interface ReaderState {
   tapToTurnPage: boolean;
   writingMode: ReaderWritingMode;
   pageDirection: ReaderPageDirection;
+}
+
+// The fork's settings in the form they are stored in, per book and globally.
+export function folioSettingsOf(state: ReaderState): FolioReaderSettings {
+  return {writingMode: state.writingMode, pageDirection: state.pageDirection, cjkFont: state.cjkFont};
 }
 
 interface LegacyViewerSetting {
@@ -143,9 +149,10 @@ export class ReaderStateService {
         if (settings.isDark != null) newState.isDark = settings.isDark;
        newState.tapToTurnPage = globalSettings.tapToTurnPage ?? true;
         if (settings.flow) newState.flow = settings.flow;
-        if (settings.folioWritingMode) newState.writingMode = settings.folioWritingMode;
-        if (settings.folioPageDirection) newState.pageDirection = settings.folioPageDirection;
-        if (settings.folioCjkFont) newState.cjkFont = settings.folioCjkFont;
+        const {folio} = settings;
+        if (folio?.writingMode) newState.writingMode = folio.writingMode;
+        if (folio?.pageDirection) newState.pageDirection = folio.pageDirection;
+        if (folio?.cjkFont) newState.cjkFont = folio.cjkFont;
         if (settings.theme) {
           const theme = this.themes.find(t => t.name === settings.theme);
           if (theme) {

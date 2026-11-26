@@ -1,7 +1,7 @@
 import {Component, inject, Input, OnInit, output, Renderer2} from '@angular/core';
 import {DecimalPipe, DOCUMENT} from '@angular/common';
 import {TranslocoDirective} from '@jsverse/transloco';
-import {ReaderCjkFont, ReaderPageDirection, ReaderStateService, ReaderWritingMode} from '../state/reader-state.service';
+import {folioSettingsOf, ReaderCjkFont, ReaderPageDirection, ReaderStateService, ReaderWritingMode} from '../state/reader-state.service';
 import {ReaderViewManagerService} from '../core/view-manager.service';
 import {BookService} from '../../../book/service/book.service';
 import {EbookViewerSetting} from '../../../book/model/book.model';
@@ -102,9 +102,7 @@ export class ReaderSettingsDialogComponent implements OnInit {
       fontFamily: this.state.fontFamily,
       isDark: this.state.isDark,
       flow: this.state.flow,
-      folioWritingMode: this.state.writingMode,
-      folioPageDirection: this.state.pageDirection,
-      folioCjkFont: this.state.cjkFont,
+      folio: folioSettingsOf(this.state),
     };
     this.bookService.updateViewerSetting({ebookSettings: setting}, this.bookId).subscribe();
   }

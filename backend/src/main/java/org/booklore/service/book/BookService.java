@@ -194,9 +194,7 @@ public class BookService {
                             .maxInlineSize(epubPref.getMaxInlineSize())
                             .theme(epubPref.getTheme())
                             .flow(epubPref.getFlow())
-                            .folioWritingMode(epubPref.getFolioWritingMode())
-                            .folioPageDirection(epubPref.getFolioPageDirection())
-                            .folioCjkFont(epubPref.getFolioCjkFont())
+                            .folio(epubPref.getFolio())
                             .build()));
         } else if (bookType == BookFileType.PDF) {
             pdfViewerPreferencesRepository.findByBookIdAndUserId(bookId, user.getId())

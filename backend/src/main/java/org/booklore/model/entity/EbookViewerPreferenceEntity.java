@@ -2,6 +2,9 @@ package org.booklore.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.booklore.model.dto.FolioReaderSettings;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Getter
@@ -60,13 +63,8 @@ public class EbookViewerPreferenceEntity {
     @Column(name = "flow", nullable = false)
     private String flow;
 
-    @Column(name = "folio_writing_mode")
-    private String folioWritingMode;
-
-    @Column(name = "folio_page_direction")
-    private String folioPageDirection;
-
-    @Column(name = "folio_cjk_font")
-    private String folioCjkFont;
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "folio_settings")
+    private FolioReaderSettings folio;
 }
 

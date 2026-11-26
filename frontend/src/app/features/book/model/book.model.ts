@@ -343,6 +343,14 @@ export interface EpubViewerSetting {
   customFontId?: number | null;
 }
 
+// Reader settings this fork adds, kept as one value per book and in the global reader settings.
+// A setting left out follows the book.
+export interface FolioReaderSettings {
+  writingMode?: 'auto' | 'horizontal' | 'vertical';
+  pageDirection?: 'auto' | 'ltr' | 'rtl';
+  cjkFont?: 'auto' | 'noto-serif';
+}
+
 export interface EbookViewerSetting {
   lineHeight: number;
   justify: boolean;
@@ -357,9 +365,7 @@ export interface EbookViewerSetting {
   isDark: boolean;
   flow: 'paginated' | 'scrolled';
   tapToTurnPage?: boolean;
-  folioWritingMode?: 'auto' | 'horizontal' | 'vertical';
-  folioPageDirection?: 'auto' | 'ltr' | 'rtl';
-  folioCjkFont?: 'auto' | 'noto-serif';
+  folio?: FolioReaderSettings;
 }
 
 export interface CbxViewerSetting {

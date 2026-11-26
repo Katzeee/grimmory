@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { lastValueFrom, Observable, throwError } from 'rxjs';
 import { API_CONFIG } from '../../../core/config/api-config';
 import { Library } from '../../book/model/library.model';
+import { FolioReaderSettings } from '../../book/model/book.model';
 import { catchError, map, tap } from 'rxjs/operators';
 import { AuthService } from '../../../shared/service/auth.service';
 import { DashboardConfig } from '../../dashboard/models/dashboard-config.model';
@@ -188,9 +189,7 @@ export interface EbookReaderSetting {
   isDark: boolean;
   flow: 'paginated' | 'scrolled';
   tapToTurnPage?: boolean;
-  folioWritingMode?: 'auto' | 'horizontal' | 'vertical';
-  folioPageDirection?: 'auto' | 'ltr' | 'rtl';
-  folioCjkFont?: 'auto' | 'noto-serif';
+  folio?: FolioReaderSettings;
 }
 
 export interface EpubReaderSetting {
