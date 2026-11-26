@@ -27,7 +27,9 @@ describe('ReaderHeaderService', () => {
       flow: 'paginated',
       writingMode: 'vertical',
       pageDirection: 'rtl',
-      cjkFont: 'noto-serif',
+      serifFont: 'noto-serif',
+      sansSerifFont: 'system',
+      fontOverride: 'off',
       rubyDisplay: 'tap',
     })),
     toggleDarkMode: vi.fn(),
@@ -153,7 +155,14 @@ describe('ReaderHeaderService', () => {
         fontFamily: null,
         isDark: true,
         flow: 'paginated',
-        folio: {writingMode: 'vertical', pageDirection: 'rtl', cjkFont: 'noto-serif', rubyDisplay: 'tap'},
+        folio: {
+          writingMode: 'vertical',
+          pageDirection: 'rtl',
+          serifFont: 'noto-serif',
+          sansSerifFont: 'system',
+          fontOverride: 'off',
+          rubyDisplay: 'tap',
+        },
       }
     }, 12);
   });

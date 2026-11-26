@@ -70,60 +70,60 @@
       <div class="setting-item">
         <div class="setting-info">
           <div class="setting-label-row">
-            <span class="setting-label">{{ t('fontFamily') }}</span>
+            <span class="setting-label">{{ t('serifFont') }}</span>
             <div class="button-group">
-              @for (font of fonts(); track font.key) {
+              @for (font of serifFonts(); track font.key) {
                 <button
                   type="button"
                   class="option-button font-button"
-                  [class.selected]="selectedFont === font.key"
-                  [class.separator]="font.key === 'separator'"
-                  [attr.data-font]="font.key"
-                  [disabled]="font.key === 'separator'"
-                  (click)="selectedFont = font.key"
-                  [pTooltip]="font.name"
-                  tooltipPosition="bottom">
-                  <span class="option-text" [style.font-family]="font.key && font.key.startsWith('custom:') ? getCustomFontName(font.key) : null">
-                    {{ font.displayName }}
-                  </span>
+                  [class.selected]="serifFont === font.key"
+                  (click)="serifFont = font.key">
+                  <span class="option-text" [style.font-family]="font.family">{{ font.nameKey ? t(font.nameKey) : font.name }}</span>
                 </button>
               }
-
               @if (!customFontsReady()) {
                 <p-skeleton width="3.0625rem" height="2.1875rem" borderRadius="6px" />
               }
             </div>
           </div>
-          <p class="setting-description">
-            {{ t('fontFamilyDesc') }}
-          </p>
         </div>
       </div>
 
       <div class="setting-item">
         <div class="setting-info">
           <div class="setting-label-row">
-            <span class="setting-label">{{ t('cjkFont') }}</span>
+            <span class="setting-label">{{ t('sansSerifFont') }}</span>
             <div class="button-group">
-              <button
-                type="button"
-                class="option-button"
-                [class.selected]="cjkFont === 'auto'"
-                (click)="cjkFont = 'auto'">
-                <span class="option-text">{{ t('bookDefault') }}</span>
-              </button>
-              <button
-                type="button"
-                class="option-button"
-                [class.selected]="cjkFont === 'noto-serif'"
-                (click)="cjkFont = 'noto-serif'">
-                <span class="option-text">{{ t('notoSerifCjk') }}</span>
-              </button>
+              @for (font of sansSerifFonts(); track font.key) {
+                <button
+                  type="button"
+                  class="option-button font-button"
+                  [class.selected]="sansSerifFont === font.key"
+                  (click)="sansSerifFont = font.key">
+                  <span class="option-text" [style.font-family]="font.family">{{ font.nameKey ? t(font.nameKey) : font.name }}</span>
+                </button>
+              }
             </div>
           </div>
-          <p class="setting-description">
-            {{ t('cjkFontDesc') }}
-          </p>
+        </div>
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-info">
+          <div class="setting-label-row">
+            <span class="setting-label">{{ t('fontOverride') }}</span>
+            <div class="button-group">
+              @for (override of fontOverrides; track override) {
+                <button
+                  type="button"
+                  class="option-button"
+                  [class.selected]="fontOverride === override"
+                  (click)="fontOverride = override">
+                  <span class="option-text">{{ t('override.' + override) }}</span>
+                </button>
+              }
+            </div>
+          </div>
         </div>
       </div>
 
@@ -143,9 +143,6 @@
               }
             </div>
           </div>
-          <p class="setting-description">
-            {{ t('rubyTextDesc') }}
-          </p>
         </div>
       </div>
 
@@ -303,9 +300,6 @@
               </button>
             </div>
           </div>
-          <p class="setting-description">
-            {{ t('writingModeDesc') }}
-          </p>
         </div>
       </div>
 
@@ -340,9 +334,6 @@
               </button>
             </div>
           </div>
-          <p class="setting-description">
-            {{ t('pageDirectionDesc') }}
-          </p>
         </div>
       </div>
 

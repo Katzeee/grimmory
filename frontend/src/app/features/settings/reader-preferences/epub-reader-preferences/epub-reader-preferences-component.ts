@@ -12,6 +12,13 @@ import {addCustomFontsToDropdown, FontPreferenceItem} from '../../../../shared/u
 import {Skeleton} from '@openng/optimus-ui/skeleton';
 import {themes} from '../../../readers/ebook-reader/state/themes.constant';
 
+interface FontOption<T extends string> {
+  key: T;
+  name?: string;
+  nameKey?: string;
+  family?: string;
+}
+
 @Component({
   selector: 'app-epub-reader-preferences-component',
   imports: [
@@ -33,10 +40,10 @@ export class EpubReaderPreferencesComponent {
 
   private static readonly baseFonts: FontPreferenceItem[] = [
     {name: 'Book Default', displayName: 'Default', key: null},
-    {name: 'Literata', displayName: 'Literata', key: 'literata'},
     {name: 'Serif', displayName: 'Serif', key: 'serif'},
     {name: 'Sans Serif', displayName: 'Sans Serif', key: 'sans-serif'},
     {name: 'Roboto', displayName: 'Roboto', key: 'roboto'},
+    {name: 'Cursive', displayName: 'Cursive', key: 'cursive'},
     {name: 'Monospace', displayName: 'Monospace', key: 'monospace'}
   ];
 
@@ -217,12 +224,45 @@ export class EpubReaderPreferencesComponent {
     this.setFolio({pageDirection});
   }
 
-  get cjkFont(): Required<FolioReaderSettings>['cjkFont'] {
-    return this.folio.cjkFont ?? 'auto';
+  private readonly customFontOptions = computed<FontOption<`custom:${number}`>[]>(() => this.customFontService.fonts()
+    .map(font => ({key: `custom:${font.id}`, name: font.fontName, family: font.fontName})));
+
+  readonly serifFonts = computed<FontOption<Required<FolioReaderSettings>['serifFont']>[]>(() => [
+    {key: 'literata', name: 'Literata'},
+    {key: 'noto-serif', nameKey: 'notoSerifCjk'},
+    {key: 'system', nameKey: 'systemFont'},
+    ...this.customFontOptions(),
+  ]);
+
+  readonly sansSerifFonts = computed<FontOption<Required<FolioReaderSettings>['sansSerifFont']>[]>(() => [
+    {key: 'system', nameKey: 'systemFont'},
+    ...this.customFontOptions(),
+  ]);
+
+  readonly fontOverrides: Required<FolioReaderSettings>['fontOverride'][] = ['off', 'serif', 'sans-serif'];
+
+  get serifFont(): Required<FolioReaderSettings>['serifFont'] {
+    return this.folio.serifFont ?? 'literata';
   }
 
-  set cjkFont(cjkFont: Required<FolioReaderSettings>['cjkFont']) {
-    this.setFolio({cjkFont});
+  set serifFont(serifFont: Required<FolioReaderSettings>['serifFont']) {
+    this.setFolio({serifFont});
+  }
+
+  get sansSerifFont(): Required<FolioReaderSettings>['sansSerifFont'] {
+    return this.folio.sansSerifFont ?? 'system';
+  }
+
+  set sansSerifFont(sansSerifFont: Required<FolioReaderSettings>['sansSerifFont']) {
+    this.setFolio({sansSerifFont});
+  }
+
+  get fontOverride(): Required<FolioReaderSettings>['fontOverride'] {
+    return this.folio.fontOverride ?? 'off';
+  }
+
+  set fontOverride(fontOverride: Required<FolioReaderSettings>['fontOverride']) {
+    this.setFolio({fontOverride});
   }
 
   readonly rubyDisplays: Required<FolioReaderSettings>['rubyDisplay'][] = ['shown', 'dimmed', 'tap', 'hidden'];

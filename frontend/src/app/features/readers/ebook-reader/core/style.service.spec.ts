@@ -34,7 +34,7 @@ describe('ReaderStyleService', () => {
     TestBed.resetTestingModule();
   });
 
-  it('generates custom font css when a cached custom font is selected', () => {
+  it('generates custom font css when a cached custom font is the serif font', () => {
     epubCustomFontService.getCustomFontById.mockReturnValue({fontName: 'Fancy Serif.otf'});
     epubCustomFontService.getBlobUrl.mockReturnValue('blob:fancy-serif');
 
@@ -48,8 +48,10 @@ describe('ReaderStyleService', () => {
       theme: {...themes[0], fg: themes[0].dark.fg, bg: themes[0].dark.bg, link: themes[0].dark.link},
       maxInlineSize: 720,
       maxBlockSize: 1440,
-      fontFamily: 'custom:7',
-      cjkFont: 'auto',
+      fontFamily: null,
+      serifFont: 'custom:7',
+      sansSerifFont: 'system',
+      fontOverride: 'off',
       rubyDisplay: 'shown',
       isDark: true,
       flow: 'paginated',
@@ -61,13 +63,13 @@ describe('ReaderStyleService', () => {
     expect(epubCustomFontService.getCustomFontById).toHaveBeenCalledWith(7);
     expect(epubCustomFontService.getBlobUrl).toHaveBeenCalledWith(7);
     expect(css).toContain('@font-face');
-    expect(css).toContain('font-family: "Fancy-Serif-otf", sans-serif !important;');
+    expect(css).toContain('--folio-serif: "Fancy-Serif-otf", "Noto Serif SC Variable", serif;');
     expect(css).toContain('font-size: 18px;');
     expect(css).toContain('text-align: start !important;');
     expect(css).toContain('hyphens: auto;');
   });
 
-  it('falls back to plain font families when the font value is not a cached custom font', () => {
+  it('leaves generic families to the platform when its fonts are chosen', () => {
     const css = service.generateCSS({
       lineHeight: 1.4,
       justify: true,
@@ -78,8 +80,10 @@ describe('ReaderStyleService', () => {
       theme: {...themes[1], fg: themes[1].light.fg, bg: themes[1].light.bg, link: themes[1].light.link},
       maxInlineSize: 720,
       maxBlockSize: 1440,
-      fontFamily: 'serif',
-      cjkFont: 'auto',
+      fontFamily: null,
+      serifFont: 'system',
+      sansSerifFont: 'system',
+      fontOverride: 'off',
       rubyDisplay: 'shown',
       isDark: false,
       flow: 'scrolled',
@@ -90,7 +94,9 @@ describe('ReaderStyleService', () => {
 
     expect(epubCustomFontService.getCustomFontById).not.toHaveBeenCalled();
     expect(css).not.toContain('@font-face');
-    expect(css).toContain('font-family: serif !important;');
+    expect(css).toContain('--folio-serif: serif;');
+    expect(css).toContain('--folio-sans-serif: sans-serif;');
+    expect(css).not.toContain('font-family: var(--folio-serif) !important');
     expect(css).toContain('text-align: justify !important;');
     expect(css).toContain('hyphens: none;');
   });
@@ -113,7 +119,9 @@ describe('ReaderStyleService', () => {
       maxInlineSize: 800,
       maxBlockSize: 1500,
       fontFamily: null,
-      cjkFont: 'auto',
+      serifFont: 'literata',
+      sansSerifFont: 'system',
+      fontOverride: 'off',
       rubyDisplay: 'shown',
       isDark: true,
       flow: 'paginated',
@@ -142,7 +150,9 @@ describe('ReaderStyleService', () => {
       maxInlineSize: 800,
       maxBlockSize: 1500,
       fontFamily: null,
-      cjkFont: 'auto',
+      serifFont: 'literata',
+      sansSerifFont: 'system',
+      fontOverride: 'off',
       rubyDisplay: 'shown',
       isDark: true,
       flow: 'scrolled',
@@ -165,7 +175,9 @@ describe('ReaderStyleService', () => {
       maxInlineSize: 800,
       maxBlockSize: 1500,
       fontFamily: null,
-      cjkFont: 'auto',
+      serifFont: 'literata',
+      sansSerifFont: 'system',
+      fontOverride: 'off',
       rubyDisplay: 'shown',
       isDark: true,
       flow: 'scrolled',

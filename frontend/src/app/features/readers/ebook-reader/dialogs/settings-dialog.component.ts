@@ -1,13 +1,32 @@
-import {Component, inject, Input, OnInit, output, Renderer2} from '@angular/core';
+import {Component, computed, inject, Input, OnInit, output, Renderer2} from '@angular/core';
 import {DecimalPipe, DOCUMENT} from '@angular/common';
 import {TranslocoDirective} from '@jsverse/transloco';
-import {folioSettingsOf, ReaderCjkFont, ReaderPageDirection, ReaderRubyDisplay, ReaderStateService, ReaderWritingMode} from '../state/reader-state.service';
+import {
+  folioSettingsOf,
+  ReaderFontOverride,
+  ReaderPageDirection,
+  ReaderRubyDisplay,
+  ReaderSansSerifFont,
+  ReaderSerifFont,
+  ReaderStateService,
+  ReaderWritingMode
+} from '../state/reader-state.service';
 import {ReaderViewManagerService} from '../core/view-manager.service';
 import {ReaderLayoutService} from '../core/layout.service';
 import {BookService} from '../../../book/service/book.service';
 import {EbookViewerSetting} from '../../../book/model/book.model';
 import {EpubCustomFontService} from '../features/fonts/custom-font.service';
 import {bundledFontStylesheetUrl, LITERATA, notoSerifCjk} from '../features/fonts/bundled-fonts';
+
+interface FontOption<T extends string> {
+  value: T;
+  name?: string;
+  nameKey?: string;
+  family: string;
+  sample: string;
+}
+
+const isCustomFont = (value: string): value is `custom:${number}` => /^custom:\d+$/.test(value);
 
 interface AnnotationColor {
   name: string;
@@ -53,13 +72,30 @@ export class ReaderSettingsDialogComponent implements OnInit {
   }
 
   getFontFamilyForPreview(fontValue: string): string {
-    if (fontValue === 'literata') return LITERATA.family;
     return this.customFontService.getFontFamilyForPreview(fontValue);
   }
 
-  get notoSerifCjkFamily(): string {
-    return notoSerifCjk(this.layout.bookLanguage()).family;
-  }
+  private readonly customFonts = computed<FontOption<`custom:${number}`>[]>(() => this.stateService.fonts()
+    .flatMap(font => font.value && isCustomFont(font.value) ? [{
+      value: font.value,
+      name: font.name,
+      family: this.getFontFamilyForPreview(font.value),
+      sample: 'Aa',
+    }] : []));
+
+  readonly serifFonts = computed<FontOption<ReaderSerifFont>[]>(() => [
+    {value: 'literata', name: 'Literata', family: LITERATA.family, sample: 'Aa'},
+    {value: 'noto-serif', nameKey: 'notoSerifCjk', family: notoSerifCjk(this.layout.bookLanguage()).family, sample: '永'},
+    {value: 'system', nameKey: 'systemFont', family: 'serif', sample: 'Aa'},
+    ...this.customFonts(),
+  ]);
+
+  readonly sansSerifFonts = computed<FontOption<ReaderSansSerifFont>[]>(() => [
+    {value: 'system', nameKey: 'systemFont', family: 'sans-serif', sample: 'Aa'},
+    ...this.customFonts(),
+  ]);
+
+  readonly fontOverrides: ReaderFontOverride[] = ['off', 'serif', 'sans-serif'];
 
   // The font buttons preview each bundled font in the dialog's own document.
   private linkBundledFonts() {
@@ -114,8 +150,18 @@ export class ReaderSettingsDialogComponent implements OnInit {
     this.syncSettingsToBackend();
   }
 
-  setCjkFont(value: ReaderCjkFont) {
-    this.stateService.setCjkFont(value);
+  setSerifFont(value: ReaderSerifFont) {
+    this.stateService.setSerifFont(value);
+    this.syncSettingsToBackend();
+  }
+
+  setSansSerifFont(value: ReaderSansSerifFont) {
+    this.stateService.setSansSerifFont(value);
+    this.syncSettingsToBackend();
+  }
+
+  setFontOverride(value: ReaderFontOverride) {
+    this.stateService.setFontOverride(value);
     this.syncSettingsToBackend();
   }
 

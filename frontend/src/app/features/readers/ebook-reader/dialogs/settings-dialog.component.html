@@ -103,37 +103,48 @@
             </div>
           </div>
 
-          <div class="section-header">{{ t('fontFamily') }}</div>
+          <div class="section-header">{{ t('serifFont') }}</div>
           <div class="font-grid">
-            @for (font of fonts; track font.value) {
+            @for (font of serifFonts(); track font.value) {
               <button type="button"
                 class="font-option"
-                [class.active]="state.fontFamily === font.value"
-                [style.font-family]="font.value ? getFontFamilyForPreview(font.value) : 'inherit'"
-                (click)="setFontFamily(font.value)">
-                <span class="font-preview">Aa</span>
-                <span class="font-name">{{ font.name }}</span>
+                [class.active]="state.serifFont === font.value"
+                [style.font-family]="font.family"
+                (click)="setSerifFont(font.value)">
+                <span class="font-preview">{{ font.sample }}</span>
+                <span class="font-name">{{ font.nameKey ? t(font.nameKey) : font.name }}</span>
               </button>
             }
           </div>
 
-          <div class="section-header">{{ t('cjkFont') }}</div>
+          <div class="section-header">{{ t('sansSerifFont') }}</div>
           <div class="font-grid">
-            <button type="button"
-              class="font-option"
-              [class.active]="state.cjkFont === 'auto'"
-              (click)="setCjkFont('auto')">
-              <span class="font-preview">永</span>
-              <span class="font-name">{{ t('bookDefault') }}</span>
-            </button>
-            <button type="button"
-              class="font-option"
-              [class.active]="state.cjkFont === 'noto-serif'"
-              [style.font-family]="notoSerifCjkFamily"
-              (click)="setCjkFont('noto-serif')">
-              <span class="font-preview">永</span>
-              <span class="font-name">{{ t('notoSerifCjk') }}</span>
-            </button>
+            @for (font of sansSerifFonts(); track font.value) {
+              <button type="button"
+                class="font-option"
+                [class.active]="state.sansSerifFont === font.value"
+                [style.font-family]="font.family"
+                (click)="setSansSerifFont(font.value)">
+                <span class="font-preview">{{ font.sample }}</span>
+                <span class="font-name">{{ font.nameKey ? t(font.nameKey) : font.name }}</span>
+              </button>
+            }
+          </div>
+
+          <div class="section-header">{{ t('fontOverride') }}</div>
+          <div class="radio-group">
+            @for (override of fontOverrides; track override) {
+              <label>
+                <input
+                  type="radio"
+                  name="fontOverride"
+                  [value]="override"
+                  [checked]="state.fontOverride === override"
+                  (change)="setFontOverride(override)"
+                />
+                {{ t('override.' + override) }}
+              </label>
+            }
           </div>
 
           <div class="section-header">{{ t('rubyText') }}</div>

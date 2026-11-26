@@ -263,11 +263,17 @@
       "typography": "排版",
       "fontFamily": "字体",
       "fontFamilyDesc": "选择最适合您阅读偏好的字体。",
-      "cjkFont": "中日文字体",
-      "cjkFontDesc": "中文、日文和韩文所用的字体。思源宋体会按书的语言选用对应的汉字字形。",
+      "serifFont": "衬线字体",
+      "sansSerifFont": "无衬线字体",
+      "fontOverride": "覆盖书籍字体",
+      "systemFont": "系统",
+      "override": {
+        "off": "关闭",
+        "serif": "衬线",
+        "sans-serif": "无衬线"
+      },
       "notoSerifCjk": "思源宋体",
       "rubyText": "注音",
-      "rubyTextDesc": "文字上方或旁边的注音（振假名、拼音、注音符号等）如何显示。点按显示会先隐藏注音，点一下词语（或用鼠标悬停）才显示。",
       "ruby": {
         "shown": "显示",
         "dimmed": "淡化",
@@ -291,9 +297,7 @@
       "paginated": "分页",
       "scrolled": "滚动",
       "writingMode": "排版方向",
-      "writingModeDesc": "横排或竖排显示文字，或跟随书籍的设定。",
       "pageDirection": "翻页方向",
-      "pageDirectionDesc": "从左到右或从右到左翻页，或跟随书籍的设定。点击、滑动和方向键都随之调整。",
       "bookDefault": "跟随书籍",
       "horizontal": "横排",
       "vertical": "竖排",
@@ -3853,7 +3857,15 @@
       "fontSize": "字体大小",
       "lineHeight": "行高",
       "fontFamily": "字体",
-      "cjkFont": "中日文字体",
+      "serifFont": "衬线字体",
+      "sansSerifFont": "无衬线字体",
+      "fontOverride": "覆盖书籍字体",
+      "systemFont": "系统",
+      "override": {
+        "off": "关闭",
+        "serif": "衬线",
+        "sans-serif": "无衬线"
+      },
       "notoSerifCjk": "思源宋体",
       "rubyText": "注音",
       "ruby": {

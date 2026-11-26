@@ -8,6 +8,7 @@ import {EpubStreamingService, EpubBookInfo} from './epub-streaming.service';
 import {ReaderStateService} from '../state/reader-state.service';
 import {ReaderFootnoteService} from '../features/footnotes/footnote.service';
 import {ReaderLayoutService} from './layout.service';
+import {pointBookFontsAtReader} from '../features/fonts/font-families';
 
 export type {ViewEvent, TextSelection} from './event.service';
 export type {PageInfo, ThemeInfo} from '../shared/header-footer.util';
@@ -55,6 +56,7 @@ export interface FoliateRenderer {
 }
 
 interface FoliateBook {
+  transformTarget?: EventTarget;
   toc?: FoliateTocItem[];
   metadata?: BookMetadata;
   getCover?(): Promise<Blob | null> | null;
@@ -169,7 +171,7 @@ export class ReaderViewManagerService {
         });
         return from(view.open(file));
       }),
-      map(() => this.layout.bookOpened()),
+      map(() => this.bookOpened()),
       catchError(err => throwError(() => err))
     );
   }
@@ -187,6 +189,7 @@ export class ReaderViewManagerService {
   }
 
   private async openStreamingBook(bookId: number, bookInfo: EpubBookInfo, bookType?: string): Promise<void> {
+    // SAFETY: the fork's streaming loader module exports makeStreamingBook.
     const {makeStreamingBook} = await import(/* @vite-ignore */ STREAMING_LOADER_URL) as StreamingLoaderModule;
     const baseUrl = this.epubStreamingService.getBaseUrl();
     const authToken = this.epubStreamingService.getAuthToken();
@@ -196,6 +199,14 @@ export class ReaderViewManagerService {
       throw new Error('View not created');
     }
     await view.open(book);
+    this.bookOpened();
+  }
+
+  // Opening a book loads none of its sections, so the book's stylesheets are all rewritten to the
+  // reader's fonts as the first navigation loads them.
+  private bookOpened(): void {
+    const book = this.view?.book;
+    if (book) pointBookFontsAtReader(book);
     this.layout.bookOpened();
   }
 

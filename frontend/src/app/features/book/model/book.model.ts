@@ -348,7 +348,9 @@ export interface EpubViewerSetting {
 export interface FolioReaderSettings {
   writingMode?: 'auto' | 'horizontal' | 'vertical';
   pageDirection?: 'auto' | 'ltr' | 'rtl';
-  cjkFont?: 'auto' | 'noto-serif';
+  serifFont?: 'literata' | 'noto-serif' | 'system' | `custom:${number}`;
+  sansSerifFont?: 'system' | `custom:${number}`;
+  fontOverride?: 'off' | 'serif' | 'sans-serif';
   rubyDisplay?: 'shown' | 'dimmed' | 'tap' | 'hidden';
 }
 

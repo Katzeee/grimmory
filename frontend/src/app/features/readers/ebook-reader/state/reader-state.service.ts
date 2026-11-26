@@ -9,7 +9,9 @@ import {EpubCustomFontService} from '../features/fonts/custom-font.service';
 
 export type ReaderWritingMode = Required<FolioReaderSettings>['writingMode'];
 export type ReaderPageDirection = Required<FolioReaderSettings>['pageDirection'];
-export type ReaderCjkFont = Required<FolioReaderSettings>['cjkFont'];
+export type ReaderSerifFont = Required<FolioReaderSettings>['serifFont'];
+export type ReaderSansSerifFont = Required<FolioReaderSettings>['sansSerifFont'];
+export type ReaderFontOverride = Required<FolioReaderSettings>['fontOverride'];
 export type ReaderRubyDisplay = Required<FolioReaderSettings>['rubyDisplay'];
 
 export interface ReaderState {
@@ -23,7 +25,9 @@ export interface ReaderState {
   maxInlineSize: number;
   maxBlockSize: number;
   fontFamily: string | null;
-  cjkFont: ReaderCjkFont;
+  serifFont: ReaderSerifFont;
+  sansSerifFont: ReaderSansSerifFont;
+  fontOverride: ReaderFontOverride;
   rubyDisplay: ReaderRubyDisplay;
   isDark: boolean;
   flow: 'paginated' | 'scrolled';
@@ -34,8 +38,8 @@ export interface ReaderState {
 
 // The fork's settings in the form they are stored in, per book and globally.
 export function folioSettingsOf(state: ReaderState): FolioReaderSettings {
-  const {writingMode, pageDirection, cjkFont, rubyDisplay} = state;
-  return {writingMode, pageDirection, cjkFont, rubyDisplay};
+  const {writingMode, pageDirection, serifFont, sansSerifFont, fontOverride, rubyDisplay} = state;
+  return {writingMode, pageDirection, serifFont, sansSerifFont, fontOverride, rubyDisplay};
 }
 
 interface LegacyViewerSetting {
@@ -50,10 +54,10 @@ export class ReaderStateService {
 
   private readonly BASE_FONTS = [
     {name: 'Publisher\'s', value: null},
-    {name: 'Literata', value: 'literata'},
     {name: 'Serif', value: 'serif'},
     {name: 'Sans-Serif', value: 'sans-serif'},
     {name: 'Monospace', value: 'monospace'},
+    {name: 'Cursive', value: 'cursive'},
   ];
 
   private readonly defaultState: ReaderState = {
@@ -72,7 +76,9 @@ export class ReaderStateService {
     maxInlineSize: 720,
     maxBlockSize: 1440,
     fontFamily: null,
-    cjkFont: 'auto',
+    serifFont: 'literata',
+    sansSerifFont: 'system',
+    fontOverride: 'off',
     rubyDisplay: 'shown',
     isDark: true,
     flow: 'paginated',
@@ -156,7 +162,9 @@ export class ReaderStateService {
         const {folio} = settings;
         if (folio?.writingMode) newState.writingMode = folio.writingMode;
         if (folio?.pageDirection) newState.pageDirection = folio.pageDirection;
-        if (folio?.cjkFont) newState.cjkFont = folio.cjkFont;
+        if (folio?.serifFont) newState.serifFont = folio.serifFont;
+        if (folio?.sansSerifFont) newState.sansSerifFont = folio.sansSerifFont;
+        if (folio?.fontOverride) newState.fontOverride = folio.fontOverride;
         if (folio?.rubyDisplay) newState.rubyDisplay = folio.rubyDisplay;
         if (settings.theme) {
           const theme = this.themes.find(t => t.name === settings.theme);
@@ -275,8 +283,16 @@ export class ReaderStateService {
     this.updateState({pageDirection});
   }
 
-  setCjkFont(cjkFont: ReaderCjkFont): void {
-    this.updateState({cjkFont});
+  setSerifFont(serifFont: ReaderSerifFont): void {
+    this.updateState({serifFont});
+  }
+
+  setSansSerifFont(sansSerifFont: ReaderSansSerifFont): void {
+    this.updateState({sansSerifFont});
+  }
+
+  setFontOverride(fontOverride: ReaderFontOverride): void {
+    this.updateState({fontOverride});
   }
 
   setRubyDisplay(rubyDisplay: ReaderRubyDisplay): void {

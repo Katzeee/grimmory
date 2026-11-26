@@ -265,11 +265,17 @@
       "typography": "Typography",
       "fontFamily": "Font Family",
       "fontFamilyDesc": "Choose a typeface that best suits your reading preference.",
-      "cjkFont": "CJK Font",
-      "cjkFontDesc": "Font for Chinese, Japanese and Korean text. Noto Serif CJK draws Han characters the way the book's language writes them.",
+      "serifFont": "Serif Font",
+      "sansSerifFont": "Sans-serif Font",
+      "fontOverride": "Override Book Fonts",
+      "systemFont": "System",
+      "override": {
+        "off": "Off",
+        "serif": "Serif",
+        "sans-serif": "Sans-serif"
+      },
       "notoSerifCjk": "Noto Serif CJK",
       "rubyText": "Ruby Text",
-      "rubyTextDesc": "How readings printed above or beside the text show, such as furigana, pinyin or zhuyin. On tap hides them until you tap a word, or hover it with a mouse.",
       "ruby": {
         "shown": "Shown",
         "dimmed": "Dimmed",
@@ -293,9 +299,7 @@
       "paginated": "Paginated",
       "scrolled": "Scrolled",
       "writingMode": "Writing Mode",
-      "writingModeDesc": "Lay text out horizontally or vertically, or follow the book.",
       "pageDirection": "Page Turn Direction",
-      "pageDirectionDesc": "Turn pages left to right or right to left, or follow the book. Taps, swipes and arrow keys follow it.",
       "bookDefault": "Book Default",
       "horizontal": "Horizontal",
       "vertical": "Vertical",
@@ -3725,7 +3729,15 @@
       "fontSize": "Font Size",
       "lineHeight": "Line Height",
       "fontFamily": "Font Family",
-      "cjkFont": "CJK Font",
+      "serifFont": "Serif font",
+      "sansSerifFont": "Sans-serif font",
+      "fontOverride": "Override book fonts",
+      "systemFont": "System",
+      "override": {
+        "off": "Off",
+        "serif": "Serif",
+        "sans-serif": "Sans-serif"
+      },
       "notoSerifCjk": "Noto Serif CJK",
       "rubyText": "Ruby Text",
       "ruby": {

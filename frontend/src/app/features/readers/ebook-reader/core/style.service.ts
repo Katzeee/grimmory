@@ -1,20 +1,21 @@
 import {inject, Service} from '@angular/core';
-import {ReaderState} from '../state/reader-state.service';
+import {ReaderSansSerifFont, ReaderSerifFont, ReaderState} from '../state/reader-state.service';
 import {EpubCustomFontService} from '../features/fonts/custom-font.service';
-import {BundledFont, bundledFontStylesheetUrl, LITERATA, notoSerifCjk} from '../features/fonts/bundled-fonts';
+import {bundledFontStylesheetUrl, LITERATA, notoSerifCjk} from '../features/fonts/bundled-fonts';
+import {SANS_SERIF_VARIABLE, SERIF_VARIABLE} from '../features/fonts/font-families';
 import {BookLayout} from './layout.service';
 
-interface FontChoice {
+// The fonts a generic family resolves to, ahead of the generic family itself.
+interface FontChain {
   families: string[];
-  generic?: string;
-  fontFace?: string;
-  stylesheets?: string[];
+  fontFaces: string[];
+  stylesheets: string[];
 }
+
+const PLATFORM_FONTS: FontChain = {families: [], fontFaces: [], stylesheets: []};
 
 // Marks annotated text whose reading a tap has revealed.
 export const RUBY_REVEALED_CLASS = 'folio-ruby-revealed';
-
-const GENERIC_FAMILIES = new Set(['serif', 'sans-serif', 'monospace', 'cursive', 'fantasy', 'system-ui']);
 
 interface ReaderRenderer {
   setAttribute(name: string, value: string | number): void;
@@ -27,29 +28,35 @@ export class ReaderStyleService {
   private readonly epubCustomFontService = inject(EpubCustomFontService);
 
   generateCSS(state: ReaderState, layout?: BookLayout): string {
-    const {lineHeight, justify, hyphenate, fontSize, theme, fontFamily, cjkFont, writingMode, rubyDisplay} = state;
+    const {lineHeight, justify, hyphenate, fontSize, theme, serifFont, sansSerifFont, fontOverride, writingMode, rubyDisplay} = state;
     const userStylesheet = '';
     const overrideFont = false;
     const mediaActiveClass = 'media-active';
 
-    const latin = this.latinFont(fontFamily);
-    const cjk = cjkFont === 'noto-serif' ? this.bundledFont(notoSerifCjk(layout?.language), 'serif') : null;
-    // Latin fonts carry no CJK glyphs, so CJK text falls through them to the CJK font. A generic
-    // family covers every script, so it closes the stack.
-    const fontStack = [...(latin?.families ?? []), ...(cjk?.families ?? []), latin?.generic ?? cjk?.generic]
-      .filter(family => family !== undefined);
-    const fontImports = [...(latin?.stylesheets ?? []), ...(cjk?.stylesheets ?? [])]
+    const serif = this.serifChain(serifFont, layout?.language);
+    const sansSerif = this.sansSerifChain(sansSerifFont);
+    const fontImports = [...serif.stylesheets, ...sansSerif.stylesheets]
       .map(stylesheet => `@import url("${bundledFontStylesheetUrl(stylesheet)}");`)
       .join('\n');
-    const fontFaceRule = latin?.fontFace ?? '';
+    const fontFaceRule = [...serif.fontFaces, ...sansSerif.fontFaces].join('\n');
 
-    const fontFamilyRule = fontStack.length > 0 ? `
+    // Text the book leaves unstyled reads in the serif font, at zero specificity so any font the
+    // book sets wins. Overriding the book's fonts sets one font on everything.
+    const overrideVariable = fontOverride === 'serif' ? SERIF_VARIABLE : SANS_SERIF_VARIABLE;
+    const fontRule = `
+        :root {
+            ${SERIF_VARIABLE}: ${[...serif.families, 'serif'].join(', ')};
+            ${SANS_SERIF_VARIABLE}: ${[...sansSerif.families, 'sans-serif'].join(', ')};
+        }
+        :where(html) {
+            font-family: var(${SERIF_VARIABLE});
+        }${fontOverride === 'off' ? '' : `
         body {
-            font-family: ${fontStack.join(', ')} !important;
+            font-family: var(${overrideVariable}) !important;
         }
         body * {
             font-family: inherit !important;
-        }` : '';
+        }`}`;
 
     // Books set their writing mode on the root, on body, or on a wrapper just inside it.
     const writingModeRule = writingMode === 'auto' ? '' : `
@@ -78,8 +85,8 @@ export class ReaderStyleService {
     }[rubyDisplay];
 
     return `${fontImports}
-      ${fontFaceRule}
-      @namespace epub "http://www.idpf.org/2007/ops";${writingModeRule}${rubyRule}
+      @namespace epub "http://www.idpf.org/2007/ops";
+      ${fontFaceRule}${fontRule}${writingModeRule}${rubyRule}
       @media print {
           html {
               column-width: auto !important;
@@ -92,7 +99,7 @@ export class ReaderStyleService {
               color-scheme: light dark;
               color: ${theme.fg || theme.light.fg};
               font-size: ${fontSize}px;
-          }${fontFamilyRule}
+          }
           a:any-link {
               color: ${theme.link || theme.light.link};
               text-decoration-color: light-dark(
@@ -197,33 +204,43 @@ export class ReaderStyleService {
     `;
   }
 
-  private latinFont(fontFamily: string | null): FontChoice | null {
-    if (fontFamily === null) return null;
-    if (fontFamily === 'literata') return this.bundledFont(LITERATA, 'serif');
-    if (GENERIC_FAMILIES.has(fontFamily)) return {families: [], generic: fontFamily};
+  // Every serif choice but the platform's falls back to Noto Serif CJK for the CJK text its own
+  // font lacks.
+  private serifChain(font: ReaderSerifFont, language?: string): FontChain {
+    if (font === 'system') return PLATFORM_FONTS;
+    const cjk = notoSerifCjk(language);
+    const main = font === 'noto-serif' ? PLATFORM_FONTS
+      : font === 'literata' ? {families: [LITERATA.family], fontFaces: [], stylesheets: LITERATA.stylesheets}
+        : this.customFontChain(font);
+    return {
+      families: [...main.families, cjk.family],
+      fontFaces: main.fontFaces,
+      stylesheets: [...main.stylesheets, ...cjk.stylesheets],
+    };
+  }
 
-    const customFontId = this.parseCustomFontId(fontFamily);
-    if (customFontId === null) return {families: [fontFamily]};
+  private sansSerifChain(font: ReaderSansSerifFont): FontChain {
+    return font === 'system' ? PLATFORM_FONTS : this.customFontChain(font);
+  }
 
+  private customFontChain(font: string): FontChain {
+    const customFontId = this.parseCustomFontId(font);
+    if (customFontId === null) return PLATFORM_FONTS;
     const customFont = this.epubCustomFontService.getCustomFontById(customFontId);
     const blobUrl = this.epubCustomFontService.getBlobUrl(customFontId);
-    if (!customFont || !blobUrl) return null;
+    if (!customFont || !blobUrl) return PLATFORM_FONTS;
     const sanitizedFontName = this.epubCustomFontService.sanitizeFontName(customFont.fontName);
     return {
       families: [`"${sanitizedFontName}"`],
-      generic: 'sans-serif',
-      fontFace: `@font-face {
+      fontFaces: [`@font-face {
               font-family: "${sanitizedFontName}";
               src: url("${blobUrl}") format("truetype");
               font-weight: normal;
               font-style: normal;
               font-display: swap;
-          }`,
+          }`],
+      stylesheets: [],
     };
-  }
-
-  private bundledFont(font: BundledFont, generic: string): FontChoice {
-    return {families: [font.family], generic, stylesheets: font.stylesheets};
   }
 
   private parseCustomFontId(fontFamily: string): number | null {
