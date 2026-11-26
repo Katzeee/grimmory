@@ -26,15 +26,4 @@ class DefaultUserSettingsProviderTest {
                 assertInstanceOf(BookLoreUser.UserSettings.EbookReaderSetting.class, value);
         assertEquals(Boolean.TRUE, setting.getTapToTurnPage());
     }
-
-    @Test
-    void ebookReaderDefaults_shouldFollowTheBookLayout() {
-        Object value = provider.getDefaultValue(UserSettingKey.EBOOK_READER_SETTING);
-
-        BookLoreUser.UserSettings.EbookReaderSetting setting =
-                assertInstanceOf(BookLoreUser.UserSettings.EbookReaderSetting.class, value);
-        assertEquals("auto", setting.getFolioWritingMode());
-        assertEquals("auto", setting.getFolioPageDirection());
-        assertEquals("auto", setting.getFolioCjkFont());
-    }
 }

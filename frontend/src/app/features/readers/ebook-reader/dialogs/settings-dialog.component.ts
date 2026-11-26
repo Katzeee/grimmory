@@ -1,8 +1,9 @@
 import {Component, inject, Input, OnInit, output, Renderer2} from '@angular/core';
 import {DecimalPipe, DOCUMENT} from '@angular/common';
 import {TranslocoDirective} from '@jsverse/transloco';
-import {ReaderCjkFont, ReaderPageDirection, ReaderStateService, ReaderWritingMode} from '../state/reader-state.service';
+import {folioSettingsOf, ReaderCjkFont, ReaderPageDirection, ReaderStateService, ReaderWritingMode} from '../state/reader-state.service';
 import {ReaderViewManagerService} from '../core/view-manager.service';
+import {ReaderLayoutService} from '../core/layout.service';
 import {BookService} from '../../../book/service/book.service';
 import {EbookViewerSetting} from '../../../book/model/book.model';
 import {EpubCustomFontService} from '../features/fonts/custom-font.service';
@@ -26,6 +27,7 @@ export class ReaderSettingsDialogComponent implements OnInit {
   private readonly customFontService = inject(EpubCustomFontService);
   private readonly renderer = inject(Renderer2);
   private readonly document = inject(DOCUMENT);
+  private readonly layout = inject(ReaderLayoutService);
   @Input() stateService!: ReaderStateService;
   @Input() viewManager!: ReaderViewManagerService;
   @Input() bookId!: number;
@@ -56,12 +58,12 @@ export class ReaderSettingsDialogComponent implements OnInit {
   }
 
   get notoSerifCjkFamily(): string {
-    return notoSerifCjk(this.viewManager.bookLanguage()).family;
+    return notoSerifCjk(this.layout.bookLanguage()).family;
   }
 
   // The font buttons preview each bundled font in the dialog's own document.
   private linkBundledFonts() {
-    const stylesheets = [...LITERATA.stylesheets, ...notoSerifCjk(this.viewManager.bookLanguage()).stylesheets];
+    const stylesheets = [...LITERATA.stylesheets, ...notoSerifCjk(this.layout.bookLanguage()).stylesheets];
     for (const href of stylesheets.map(bundledFontStylesheetUrl)) {
       if (this.document.head.querySelector(`link[href="${href}"]`)) continue;
       const link = this.document.createElement('link');
@@ -77,7 +79,7 @@ export class ReaderSettingsDialogComponent implements OnInit {
 
   // Vertical pages hold one full-height column, so only the block size still shapes them.
   get vertical() {
-    return this.viewManager.verticalWriting();
+    return this.layout.verticalWriting();
   }
 
   get themes() {
@@ -102,9 +104,7 @@ export class ReaderSettingsDialogComponent implements OnInit {
       fontFamily: this.state.fontFamily,
       isDark: this.state.isDark,
       flow: this.state.flow,
-      folioWritingMode: this.state.writingMode,
-      folioPageDirection: this.state.pageDirection,
-      folioCjkFont: this.state.cjkFont,
+      folio: folioSettingsOf(this.state),
     };
     this.bookService.updateViewerSetting({ebookSettings: setting}, this.bookId).subscribe();
   }

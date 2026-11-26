@@ -1,7 +1,7 @@
 import {computed, inject, Injectable, signal} from '@angular/core';
 import {Location} from '@angular/common';
 import {Subject} from 'rxjs';
-import {ReaderStateService} from '../../state/reader-state.service';
+import {folioSettingsOf, ReaderStateService} from '../../state/reader-state.service';
 import {ReaderSidebarService} from '../sidebar/sidebar.service';
 import {ReaderLeftSidebarService} from '../panel/panel.service';
 import {BookService} from '../../../../book/service/book.service';
@@ -111,9 +111,7 @@ export class ReaderHeaderService {
       fontFamily: state.fontFamily,
       isDark: state.isDark,
       flow: state.flow,
-      folioWritingMode: state.writingMode,
-      folioPageDirection: state.pageDirection,
-      folioCjkFont: state.cjkFont,
+      folio: folioSettingsOf(state),
     };
     this.bookService.updateViewerSetting({ebookSettings: setting}, this.bookId).subscribe();
   }

@@ -188,9 +188,7 @@ public class BookLoreUser {
             private String theme;
             private String flow;
             private Boolean tapToTurnPage;
-            private String folioWritingMode;
-            private String folioPageDirection;
-            private String folioCjkFont;
+            private FolioReaderSettings folio;
         }
 
         @Data

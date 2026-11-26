@@ -38,6 +38,7 @@ import {ViewEvent} from './core/view-manager.service';
 import {PageTitleService} from '../../../shared/service/page-title.service';
 import {isTouchScreen, setupReaderEdges} from '../shared/reader-edges.util';
 import {ReaderFootnoteService} from './features/footnotes/footnote.service';
+import {ReaderLayoutService} from './core/layout.service';
 import {ReaderFootnotePopupComponent} from './features/footnotes/footnote-popup.component';
 
 interface PendingInitialChapterRestore {
@@ -78,7 +79,8 @@ interface PendingInitialChapterRestore {
     ReaderLeftSidebarService,
     ReaderHeaderService,
     ReaderNoteService,
-    ReaderFootnoteService
+    ReaderFootnoteService,
+    ReaderLayoutService
   ],
   templateUrl: './ebook-reader.component.html',
   styleUrls: ['./ebook-reader.component.scss'],
@@ -104,6 +106,7 @@ export class EbookReaderComponent implements OnInit {
   private readonly messageService = inject(MessageService);
   private readonly pageTitle = inject(PageTitleService);
   private readonly footnoteService = inject(ReaderFootnoteService);
+  private readonly layout = inject(ReaderLayoutService);
 
   public sidebarService = inject(ReaderSidebarService);
   public leftSidebarService = inject(ReaderLeftSidebarService);
@@ -182,7 +185,7 @@ export class EbookReaderComponent implements OnInit {
       const pageLayout = `${writingMode}:${pageDirection}`;
       untracked(() => {
         if (this.appliedPageLayout !== null && this.appliedPageLayout !== pageLayout && !this.isLoading()) {
-          this.viewManager.reopen(() => this.applyStyles())
+          this.layout.reopen(() => this.applyStyles())
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe();
         }
@@ -558,8 +561,8 @@ export class EbookReaderComponent implements OnInit {
     const renderer = this.viewManager.getRenderer();
     if (renderer) {
       const state = this.stateService.state();
-      this.styleService.applyStylesToRenderer(renderer, state, this.viewManager.isVerticalWriting(), this.viewManager.bookLanguage());
-      this.viewManager.setPageDirection(state.pageDirection);
+      this.styleService.applyStylesToRenderer(renderer, state, this.layout.measure());
+      this.layout.setPageDirection(state.pageDirection);
       if (state.flow) {
         renderer.setAttribute?.('flow', state.flow);
       }
@@ -624,7 +627,7 @@ export class EbookReaderComponent implements OnInit {
   private applyMaxInlineSize(): void {
     const renderer = this.viewManager.getRenderer();
     if (!renderer) return;
-    const size = this.styleService.maxInlineSize(this.stateService.state(), this.viewManager.isVerticalWriting());
+    const size = this.styleService.maxInlineSize(this.stateService.state(), this.layout.measure());
     if (renderer.getAttribute('max-inline-size') !== size) {
       renderer.setAttribute('max-inline-size', size);
     }

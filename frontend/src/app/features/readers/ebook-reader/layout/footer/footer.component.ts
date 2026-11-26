@@ -1,6 +1,7 @@
 import {Component, HostListener, inject, Input, output} from '@angular/core';
 import {TranslocoDirective} from '@jsverse/transloco';
 import {ReaderViewManagerService} from '../../core/view-manager.service';
+import {ReaderLayoutService} from '../../core/layout.service';
 import {ReaderIconComponent} from '../../shared/icon.component';
 import {RelocateProgressData} from '../../state/progress.service';
 
@@ -13,6 +14,7 @@ import {RelocateProgressData} from '../../state/progress.service';
 })
 export class ReaderNavbarComponent {
   private readonly managerService = inject(ReaderViewManagerService);
+  private readonly layout = inject(ReaderLayoutService);
   @Input() progressData: RelocateProgressData | null = null;
   @Input() forceVisible = false;
   @Input() set sectionFractions(value: number[]) {
@@ -83,7 +85,7 @@ export class ReaderNavbarComponent {
 
   // A book that turns pages right to left starts on the right, so the bar runs the same way.
   get rtl(): boolean {
-    return this.managerService.rtlProgression();
+    return this.layout.rtlProgression();
   }
 
   get navbarVisible(): boolean {
