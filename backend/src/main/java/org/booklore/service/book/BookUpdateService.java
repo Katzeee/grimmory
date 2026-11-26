@@ -158,6 +158,7 @@ public class BookUpdateService {
         prefs.setFlow(epubSettings.getFlow());
         prefs.setFolioWritingMode(epubSettings.getFolioWritingMode());
         prefs.setFolioPageDirection(epubSettings.getFolioPageDirection());
+        prefs.setFolioCjkFont(epubSettings.getFolioCjkFont());
 
         ebookViewerPreferenceRepository.save(prefs);
     }

@@ -65,5 +65,8 @@ public class EbookViewerPreferenceEntity {
 
     @Column(name = "folio_page_direction")
     private String folioPageDirection;
+
+    @Column(name = "folio_cjk_font")
+    private String folioCjkFont;
 }
 

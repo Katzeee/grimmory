@@ -103,6 +103,33 @@
       <div class="setting-item">
         <div class="setting-info">
           <div class="setting-label-row">
+            <span class="setting-label">{{ t('cjkFont') }}</span>
+            <div class="button-group">
+              <button
+                type="button"
+                class="option-button"
+                [class.selected]="cjkFont === 'auto'"
+                (click)="cjkFont = 'auto'">
+                <span class="option-text">{{ t('bookDefault') }}</span>
+              </button>
+              <button
+                type="button"
+                class="option-button"
+                [class.selected]="cjkFont === 'noto-serif'"
+                (click)="cjkFont = 'noto-serif'">
+                <span class="option-text">{{ t('notoSerifCjk') }}</span>
+              </button>
+            </div>
+          </div>
+          <p class="setting-description">
+            {{ t('cjkFontDesc') }}
+          </p>
+        </div>
+      </div>
+
+      <div class="setting-item">
+        <div class="setting-info">
+          <div class="setting-label-row">
             <span class="setting-label">{{ t('fontSize') }}</span>
             <div class="font-size-controls">
               <p-button icon="pi pi-minus" size="small" rounded outlined (click)="decreaseFontSize()" />

@@ -359,6 +359,7 @@ export interface EbookViewerSetting {
   tapToTurnPage?: boolean;
   folioWritingMode?: 'auto' | 'horizontal' | 'vertical';
   folioPageDirection?: 'auto' | 'ltr' | 'rtl';
+  folioCjkFont?: 'auto' | 'noto-serif';
 }
 
 export interface CbxViewerSetting {

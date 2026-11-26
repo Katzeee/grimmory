@@ -32,10 +32,10 @@ export class EpubReaderPreferencesComponent {
 
   private static readonly baseFonts: FontPreferenceItem[] = [
     {name: 'Book Default', displayName: 'Default', key: null},
+    {name: 'Literata', displayName: 'Literata', key: 'literata'},
     {name: 'Serif', displayName: 'Serif', key: 'serif'},
     {name: 'Sans Serif', displayName: 'Sans Serif', key: 'sans-serif'},
     {name: 'Roboto', displayName: 'Roboto', key: 'roboto'},
-    {name: 'Cursive', displayName: 'Cursive', key: 'cursive'},
     {name: 'Monospace', displayName: 'Monospace', key: 'monospace'}
   ];
 
@@ -206,6 +206,15 @@ export class EpubReaderPreferencesComponent {
   set pageDirection(value: 'auto' | 'ltr' | 'rtl') {
     this.userSettings().ebookReaderSetting.folioPageDirection = value;
     this.readerPreferencesService.updatePreference(['ebookReaderSetting', 'folioPageDirection'], value);
+  }
+
+  get cjkFont(): 'auto' | 'noto-serif' {
+    return this.userSettings().ebookReaderSetting.folioCjkFont ?? 'auto';
+  }
+
+  set cjkFont(value: 'auto' | 'noto-serif') {
+    this.userSettings().ebookReaderSetting.folioCjkFont = value;
+    this.readerPreferencesService.updatePreference(['ebookReaderSetting', 'folioCjkFont'], value);
   }
 
   get tapToTurnPage(): boolean {

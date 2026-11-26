@@ -44,6 +44,7 @@ export class ReaderQuickSettingsComponent {
       flow: this.state.flow,
       folioWritingMode: this.state.writingMode,
       folioPageDirection: this.state.pageDirection,
+      folioCjkFont: this.state.cjkFont,
     };
     this.bookService.updateViewerSetting({ebookSettings: setting}, this.bookId).subscribe();
   }

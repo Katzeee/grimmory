@@ -190,6 +190,7 @@ public class BookLoreUser {
             private Boolean tapToTurnPage;
             private String folioWritingMode;
             private String folioPageDirection;
+            private String folioCjkFont;
         }
 
         @Data

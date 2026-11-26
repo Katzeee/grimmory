@@ -248,6 +248,12 @@ export class ReaderViewManagerService {
     return vertical;
   }
 
+  bookLanguage(): string | undefined {
+    const language = this.view?.book?.metadata?.language;
+    // A book with several dc:language entries lists them all; the first is its main language.
+    return [language].flat()[0];
+  }
+
   isRtlProgression(): boolean {
     const dir = this.view?.book?.dir;
     if (dir === 'rtl' || dir === 'ltr') return dir === 'rtl';

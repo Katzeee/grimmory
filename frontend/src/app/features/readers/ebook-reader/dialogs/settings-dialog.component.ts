@@ -1,11 +1,12 @@
 import {Component, inject, Input, OnInit, output, Renderer2} from '@angular/core';
 import {DecimalPipe, DOCUMENT} from '@angular/common';
 import {TranslocoDirective} from '@jsverse/transloco';
-import {ReaderPageDirection, ReaderStateService, ReaderWritingMode} from '../state/reader-state.service';
+import {ReaderCjkFont, ReaderPageDirection, ReaderStateService, ReaderWritingMode} from '../state/reader-state.service';
 import {ReaderViewManagerService} from '../core/view-manager.service';
 import {BookService} from '../../../book/service/book.service';
 import {EbookViewerSetting} from '../../../book/model/book.model';
 import {EpubCustomFontService} from '../features/fonts/custom-font.service';
+import {bundledFontStylesheetUrl, LITERATA, notoSerifCjk} from '../features/fonts/bundled-fonts';
 
 interface AnnotationColor {
   name: string;
@@ -45,11 +46,29 @@ export class ReaderSettingsDialogComponent implements OnInit {
 
   ngOnInit() {
     this.customFontService.injectCustomFontsStylesheet(this.renderer, this.document);
+    this.linkBundledFonts();
     this.selectedAnnotationColor = this.getSelectedAnnotationColor();
   }
 
   getFontFamilyForPreview(fontValue: string): string {
+    if (fontValue === 'literata') return LITERATA.family;
     return this.customFontService.getFontFamilyForPreview(fontValue);
+  }
+
+  get notoSerifCjkFamily(): string {
+    return notoSerifCjk(this.viewManager.bookLanguage()).family;
+  }
+
+  // The font buttons preview each bundled font in the dialog's own document.
+  private linkBundledFonts() {
+    const stylesheets = [...LITERATA.stylesheets, ...notoSerifCjk(this.viewManager.bookLanguage()).stylesheets];
+    for (const href of stylesheets.map(bundledFontStylesheetUrl)) {
+      if (this.document.head.querySelector(`link[href="${href}"]`)) continue;
+      const link = this.document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = href;
+      this.renderer.appendChild(this.document.head, link);
+    }
   }
 
   get state() {
@@ -85,12 +104,18 @@ export class ReaderSettingsDialogComponent implements OnInit {
       flow: this.state.flow,
       folioWritingMode: this.state.writingMode,
       folioPageDirection: this.state.pageDirection,
+      folioCjkFont: this.state.cjkFont,
     };
     this.bookService.updateViewerSetting({ebookSettings: setting}, this.bookId).subscribe();
   }
 
   setFontFamily(value: string | null) {
     this.stateService.setFontFamily(value);
+    this.syncSettingsToBackend();
+  }
+
+  setCjkFont(value: ReaderCjkFont) {
+    this.stateService.setCjkFont(value);
     this.syncSettingsToBackend();
   }
 

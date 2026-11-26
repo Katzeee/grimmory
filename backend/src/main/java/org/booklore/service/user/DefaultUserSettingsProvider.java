@@ -94,6 +94,7 @@ public class DefaultUserSettingsProvider {
                 .tapToTurnPage(true)
                 .folioWritingMode("auto")
                 .folioPageDirection("auto")
+                .folioCjkFont("auto")
                 .build();
     }
 

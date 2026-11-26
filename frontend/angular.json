@@ -43,6 +43,26 @@
                 "output": "/assets/foliate/"
               },
               {
+                "glob": "{*.css,LICENSE,files/*.woff2}",
+                "input": "node_modules/@fontsource-variable/literata",
+                "output": "/assets/fonts/literata/"
+              },
+              {
+                "glob": "{*.css,LICENSE,files/*.woff2}",
+                "input": "node_modules/@fontsource-variable/noto-serif-jp",
+                "output": "/assets/fonts/noto-serif-jp/"
+              },
+              {
+                "glob": "{*.css,LICENSE,files/*.woff2}",
+                "input": "node_modules/@fontsource-variable/noto-serif-sc",
+                "output": "/assets/fonts/noto-serif-sc/"
+              },
+              {
+                "glob": "{*.css,LICENSE,files/*.woff2}",
+                "input": "node_modules/@fontsource-variable/noto-serif-tc",
+                "output": "/assets/fonts/noto-serif-tc/"
+              },
+              {
                 "glob": "**/*",
                 "input": "node_modules/@embedpdf/pdfium/dist/",
                 "output": "/assets/pdfium/"

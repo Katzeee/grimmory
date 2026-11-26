@@ -552,7 +552,7 @@ export class EbookReaderComponent implements OnInit {
     const renderer = this.viewManager.getRenderer();
     if (renderer) {
       const state = this.stateService.state();
-      this.styleService.applyStylesToRenderer(renderer, state, this.viewManager.isVerticalWriting());
+      this.styleService.applyStylesToRenderer(renderer, state, this.viewManager.isVerticalWriting(), this.viewManager.bookLanguage());
       this.viewManager.setPageDirection(state.pageDirection);
       if (state.flow) {
         renderer.setAttribute?.('flow', state.flow);

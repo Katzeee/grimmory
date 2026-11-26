@@ -116,6 +116,25 @@
               </button>
             }
           </div>
+
+          <div class="section-header">{{ t('cjkFont') }}</div>
+          <div class="font-grid">
+            <button type="button"
+              class="font-option"
+              [class.active]="state.cjkFont === 'auto'"
+              (click)="setCjkFont('auto')">
+              <span class="font-preview">永</span>
+              <span class="font-name">{{ t('bookDefault') }}</span>
+            </button>
+            <button type="button"
+              class="font-option"
+              [class.active]="state.cjkFont === 'noto-serif'"
+              [style.font-family]="notoSerifCjkFamily"
+              (click)="setCjkFont('noto-serif')">
+              <span class="font-preview">永</span>
+              <span class="font-name">{{ t('notoSerifCjk') }}</span>
+            </button>
+          </div>
         </div>
       }
 

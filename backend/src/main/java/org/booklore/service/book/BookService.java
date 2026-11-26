@@ -196,6 +196,7 @@ public class BookService {
                             .flow(epubPref.getFlow())
                             .folioWritingMode(epubPref.getFolioWritingMode())
                             .folioPageDirection(epubPref.getFolioPageDirection())
+                            .folioCjkFont(epubPref.getFolioCjkFont())
                             .build()));
         } else if (bookType == BookFileType.PDF) {
             pdfViewerPreferencesRepository.findByBookIdAndUserId(bookId, user.getId())

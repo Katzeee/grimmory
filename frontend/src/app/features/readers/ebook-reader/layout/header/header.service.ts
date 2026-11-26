@@ -113,6 +113,7 @@ export class ReaderHeaderService {
       flow: state.flow,
       folioWritingMode: state.writingMode,
       folioPageDirection: state.pageDirection,
+      folioCjkFont: state.cjkFont,
     };
     this.bookService.updateViewerSetting({ebookSettings: setting}, this.bookId).subscribe();
   }

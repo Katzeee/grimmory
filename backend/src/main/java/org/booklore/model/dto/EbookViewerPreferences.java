@@ -26,5 +26,6 @@ public class EbookViewerPreferences {
     private String flow;
     private String folioWritingMode;
     private String folioPageDirection;
+    private String folioCjkFont;
 }
 

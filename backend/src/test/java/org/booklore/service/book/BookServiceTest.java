@@ -174,6 +174,7 @@ class BookServiceTest {
         epubPref.setTheme("light");
         epubPref.setFolioWritingMode("horizontal");
         epubPref.setFolioPageDirection("ltr");
+        epubPref.setFolioCjkFont("noto-serif");
         when(ebookViewerPreferenceRepository.findByBookIdAndUserId(4L, testUser.getId())).thenReturn(Optional.of(epubPref));
         when(authenticationService.getAuthenticatedUser()).thenReturn(testUser);
 
@@ -193,6 +194,7 @@ class BookServiceTest {
         assertEquals("light", settings.getEbookSettings().getTheme());
         assertEquals("horizontal", settings.getEbookSettings().getFolioWritingMode());
         assertEquals("ltr", settings.getEbookSettings().getFolioPageDirection());
+        assertEquals("noto-serif", settings.getEbookSettings().getFolioCjkFont());
     }
 
     @Test

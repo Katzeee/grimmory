@@ -35,5 +35,6 @@ class DefaultUserSettingsProviderTest {
                 assertInstanceOf(BookLoreUser.UserSettings.EbookReaderSetting.class, value);
         assertEquals("auto", setting.getFolioWritingMode());
         assertEquals("auto", setting.getFolioPageDirection());
+        assertEquals("auto", setting.getFolioCjkFont());
     }
 }

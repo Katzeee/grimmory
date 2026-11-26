@@ -1,6 +1,16 @@
 import {inject, Service} from '@angular/core';
 import {ReaderState} from '../state/reader-state.service';
 import {EpubCustomFontService} from '../features/fonts/custom-font.service';
+import {BundledFont, bundledFontStylesheetUrl, LITERATA, notoSerifCjk} from '../features/fonts/bundled-fonts';
+
+interface FontChoice {
+  families: string[];
+  generic?: string;
+  fontFace?: string;
+  stylesheets?: string[];
+}
+
+const GENERIC_FAMILIES = new Set(['serif', 'sans-serif', 'monospace', 'cursive', 'fantasy', 'system-ui']);
 
 interface ReaderRenderer {
   setAttribute(name: string, value: string | number): void;
@@ -12,39 +22,26 @@ interface ReaderRenderer {
 export class ReaderStyleService {
   private readonly epubCustomFontService = inject(EpubCustomFontService);
 
-  generateCSS(state: ReaderState): string {
-    const {lineHeight, justify, hyphenate, fontSize, theme, fontFamily, writingMode} = state;
+  generateCSS(state: ReaderState, language?: string): string {
+    const {lineHeight, justify, hyphenate, fontSize, theme, fontFamily, cjkFont, writingMode} = state;
     const userStylesheet = '';
     const overrideFont = false;
     const mediaActiveClass = 'media-active';
 
-    let fontFaceRule = '';
-    let actualFontFamily = null;
+    const latin = this.latinFont(fontFamily);
+    const cjk = cjkFont === 'noto-serif' ? this.bundledFont(notoSerifCjk(language), 'serif') : null;
+    // Latin fonts carry no CJK glyphs, so CJK text falls through them to the CJK font. A generic
+    // family covers every script, so it closes the stack.
+    const fontStack = [...(latin?.families ?? []), ...(cjk?.families ?? []), latin?.generic ?? cjk?.generic]
+      .filter(family => family !== undefined);
+    const fontImports = [...(latin?.stylesheets ?? []), ...(cjk?.stylesheets ?? [])]
+      .map(stylesheet => `@import url("${bundledFontStylesheetUrl(stylesheet)}");`)
+      .join('\n');
+    const fontFaceRule = latin?.fontFace ?? '';
 
-    if (fontFamily !== null) {
-      const customFontId = this.parseCustomFontId(fontFamily);
-      if (customFontId !== null) {
-        const customFont = this.epubCustomFontService.getCustomFontById(customFontId);
-        const blobUrl = this.epubCustomFontService.getBlobUrl(customFontId);
-        if (customFont && blobUrl) {
-          const sanitizedFontName = this.epubCustomFontService.sanitizeFontName(customFont.fontName);
-          actualFontFamily = `"${sanitizedFontName}", sans-serif`;
-          fontFaceRule = `@font-face {
-              font-family: "${sanitizedFontName}";
-              src: url("${blobUrl}") format("truetype");
-              font-weight: normal;
-              font-style: normal;
-              font-display: swap;
-          }`;
-        }
-      } else {
-        actualFontFamily = fontFamily;
-      }
-    }
-
-    const fontFamilyRule = actualFontFamily ? `
+    const fontFamilyRule = fontStack.length > 0 ? `
         body {
-            font-family: ${actualFontFamily} !important;
+            font-family: ${fontStack.join(', ')} !important;
         }
         body * {
             font-family: inherit !important;
@@ -56,7 +53,7 @@ export class ReaderStyleService {
             writing-mode: ${writingMode === 'vertical' ? 'vertical-rl' : 'horizontal-tb'} !important;
         }`;
 
-    return `
+    return `${fontImports}
       ${fontFaceRule}
       @namespace epub "http://www.idpf.org/2007/ops";${writingModeRule}
       @media print {
@@ -175,6 +172,35 @@ export class ReaderStyleService {
     `;
   }
 
+  private latinFont(fontFamily: string | null): FontChoice | null {
+    if (fontFamily === null) return null;
+    if (fontFamily === 'literata') return this.bundledFont(LITERATA, 'serif');
+    if (GENERIC_FAMILIES.has(fontFamily)) return {families: [], generic: fontFamily};
+
+    const customFontId = this.parseCustomFontId(fontFamily);
+    if (customFontId === null) return {families: [fontFamily]};
+
+    const customFont = this.epubCustomFontService.getCustomFontById(customFontId);
+    const blobUrl = this.epubCustomFontService.getBlobUrl(customFontId);
+    if (!customFont || !blobUrl) return null;
+    const sanitizedFontName = this.epubCustomFontService.sanitizeFontName(customFont.fontName);
+    return {
+      families: [`"${sanitizedFontName}"`],
+      generic: 'sans-serif',
+      fontFace: `@font-face {
+              font-family: "${sanitizedFontName}";
+              src: url("${blobUrl}") format("truetype");
+              font-weight: normal;
+              font-style: normal;
+              font-display: swap;
+          }`,
+    };
+  }
+
+  private bundledFont(font: BundledFont, generic: string): FontChoice {
+    return {families: [font.family], generic, stylesheets: font.stylesheets};
+  }
+
   private parseCustomFontId(fontFamily: string): number | null {
     if (fontFamily.startsWith('custom:')) {
       const id = parseInt(fontFamily.substring(7), 10);
@@ -194,7 +220,7 @@ export class ReaderStyleService {
     return `${size}px`;
   }
 
-  applyStylesToRenderer(renderer: ReaderRenderer | null | undefined, state: ReaderState, vertical = false): void {
+  applyStylesToRenderer(renderer: ReaderRenderer | null | undefined, state: ReaderState, vertical = false, language?: string): void {
     if (!renderer) return;
 
     renderer.setAttribute('max-column-count', state.maxColumnCount);
@@ -202,7 +228,7 @@ export class ReaderStyleService {
     renderer.setAttribute('max-inline-size', this.maxInlineSize(state, vertical));
     renderer.setAttribute('max-block-size', `${state.maxBlockSize}px`);
     if (typeof renderer.setStyles === 'function') {
-      const css = this.generateCSS(state);
+      const css = this.generateCSS(state, language);
       renderer.setStyles(css);
     }
 

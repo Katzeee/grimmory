@@ -133,6 +133,7 @@ class BookUpdateServiceTest {
                         .flow("paginated")
                         .folioWritingMode("vertical")
                         .folioPageDirection("rtl")
+                        .folioCjkFont("noto-serif")
                         .build())
                 .build();
 
@@ -141,6 +142,7 @@ class BookUpdateServiceTest {
         verify(ebookViewerPreferenceRepository).save(epubPrefs);
         assertEquals("vertical", epubPrefs.getFolioWritingMode());
         assertEquals("rtl", epubPrefs.getFolioPageDirection());
+        assertEquals("noto-serif", epubPrefs.getFolioCjkFont());
         assertEquals("serif", epubPrefs.getFontFamily());
         assertEquals(18, epubPrefs.getFontSize());
         assertEquals(0.1f, epubPrefs.getGap());

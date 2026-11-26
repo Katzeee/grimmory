@@ -8,6 +8,7 @@ import {EpubCustomFontService} from '../features/fonts/custom-font.service';
 
 export type ReaderWritingMode = 'auto' | 'horizontal' | 'vertical';
 export type ReaderPageDirection = 'auto' | 'ltr' | 'rtl';
+export type ReaderCjkFont = 'auto' | 'noto-serif';
 
 export interface ReaderState {
   lineHeight: number;
@@ -20,6 +21,7 @@ export interface ReaderState {
   maxInlineSize: number;
   maxBlockSize: number;
   fontFamily: string | null;
+  cjkFont: ReaderCjkFont;
   isDark: boolean;
   flow: 'paginated' | 'scrolled';
   tapToTurnPage: boolean;
@@ -39,10 +41,10 @@ export class ReaderStateService {
 
   private readonly BASE_FONTS = [
     {name: 'Publisher\'s', value: null},
+    {name: 'Literata', value: 'literata'},
     {name: 'Serif', value: 'serif'},
     {name: 'Sans-Serif', value: 'sans-serif'},
     {name: 'Monospace', value: 'monospace'},
-    {name: 'Cursive', value: 'cursive'},
   ];
 
   private readonly defaultState: ReaderState = {
@@ -61,6 +63,7 @@ export class ReaderStateService {
     maxInlineSize: 720,
     maxBlockSize: 1440,
     fontFamily: null,
+    cjkFont: 'auto',
     isDark: true,
     flow: 'paginated',
     tapToTurnPage: true,
@@ -142,6 +145,7 @@ export class ReaderStateService {
         if (settings.flow) newState.flow = settings.flow;
         if (settings.folioWritingMode) newState.writingMode = settings.folioWritingMode;
         if (settings.folioPageDirection) newState.pageDirection = settings.folioPageDirection;
+        if (settings.folioCjkFont) newState.cjkFont = settings.folioCjkFont;
         if (settings.theme) {
           const theme = this.themes.find(t => t.name === settings.theme);
           if (theme) {
@@ -257,6 +261,10 @@ export class ReaderStateService {
 
   setPageDirection(pageDirection: ReaderPageDirection): void {
     this.updateState({pageDirection});
+  }
+
+  setCjkFont(cjkFont: ReaderCjkFont): void {
+    this.updateState({cjkFont});
   }
 
   private updateState(partial: Partial<ReaderState>): void {

@@ -201,6 +201,18 @@ importers:
       '@embedpdf/snippet':
         specifier: 2.15.1
         version: 2.15.1(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(svelte@5.55.9(@typescript-eslint/types@8.72.2))(vue@3.5.34(typescript@6.0.3))
+      '@fontsource-variable/literata':
+        specifier: 5.3.0
+        version: 5.3.0
+      '@fontsource-variable/noto-serif-jp':
+        specifier: 5.3.1
+        version: 5.3.1
+      '@fontsource-variable/noto-serif-sc':
+        specifier: 5.3.1
+        version: 5.3.1
+      '@fontsource-variable/noto-serif-tc':
+        specifier: 5.3.1
+        version: 5.3.1
       '@jsverse/transloco':
         specifier: ^8.4.0
         version: 8.4.0(@angular/core@22.2.6(@angular/compiler@22.2.6)(rxjs@7.8.2))(rxjs@7.8.2)(typescript@6.0.3)
@@ -1343,6 +1355,18 @@ packages:
     peerDependenciesMeta:
       '@noble/hashes':
         optional: true
+
+  '@fontsource-variable/literata@5.3.0':
+    resolution: {integrity: sha512-1Jw7xvOcoGyB83lxB2nG4bfNbqtX2/TTbdh9sHAOmU064SvmSdulDtA5RBu5JYWf64fdaKX7xU+z3GO1T2bCHA==}
+
+  '@fontsource-variable/noto-serif-jp@5.3.1':
+    resolution: {integrity: sha512-quU5uIezSqZFgPaDDI2C3hQfIJHzyXVYuvMZsDDF++og8yechsAwcmCkLLdofPboUB1xHOWV3xohJyIVBi3b4g==}
+
+  '@fontsource-variable/noto-serif-sc@5.3.1':
+    resolution: {integrity: sha512-aIHcBaL13QctVaJFeT6wqfgO9Rq/cNtD5g2ob4ze59fYPYwacGthnIrHBe83kDpMEB/k6VGtGc6fS99RImcoSQ==}
+
+  '@fontsource-variable/noto-serif-tc@5.3.1':
+    resolution: {integrity: sha512-IW3Pydbc5NWA5JNPyk2SST3x85STRtakYXs4HQKU2cv3xB4Y192z1OV2z09XOS9TcZckbPPzagpQ1lgeBjSFNw==}
 
   '@harperfast/extended-iterable@1.0.3':
     resolution: {integrity: sha512-sSAYhQca3rDWtQUHSAPeO7axFIUJOI6hn1gjRC5APVE1a90tuyT8f5WIgRsFhhWA7htNkju2veB9eWL6YHi/Lw==}
@@ -5620,6 +5644,14 @@ snapshots:
   '@exodus/bytes@1.16.0(@noble/hashes@2.4.0)':
     optionalDependencies:
       '@noble/hashes': 2.4.0
+
+  '@fontsource-variable/literata@5.3.0': {}
+
+  '@fontsource-variable/noto-serif-jp@5.3.1': {}
+
+  '@fontsource-variable/noto-serif-sc@5.3.1': {}
+
+  '@fontsource-variable/noto-serif-tc@5.3.1': {}
 
   '@harperfast/extended-iterable@1.0.3':
     optional: true
