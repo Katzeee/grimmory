@@ -4,7 +4,7 @@ import {map, tap} from 'rxjs/operators';
 import {Theme, themes} from './themes.constant';
 import {BookService} from '../../../book/service/book.service';
 import {UserService} from '../../../settings/user-management/user.service';
-import {FolioReaderSettings} from '../../../book/model/book.model';
+import {FOLIO_DEFAULTS, FolioReaderSettings} from '../../../book/model/book.model';
 import {EpubCustomFontService} from '../features/fonts/custom-font.service';
 
 export type ReaderWritingMode = Required<FolioReaderSettings>['writingMode'];
@@ -34,12 +34,6 @@ export interface ReaderState {
   tapToTurnPage: boolean;
   writingMode: ReaderWritingMode;
   pageDirection: ReaderPageDirection;
-}
-
-// The fork's settings in the form they are stored in, per book and globally.
-export function folioSettingsOf(state: ReaderState): FolioReaderSettings {
-  const {writingMode, pageDirection, serifFont, sansSerifFont, fontOverride, rubyDisplay} = state;
-  return {writingMode, pageDirection, serifFont, sansSerifFont, fontOverride, rubyDisplay};
 }
 
 interface LegacyViewerSetting {
@@ -76,18 +70,14 @@ export class ReaderStateService {
     maxInlineSize: 720,
     maxBlockSize: 1440,
     fontFamily: null,
-    serifFont: 'literata',
-    sansSerifFont: 'noto-sans',
-    fontOverride: 'off',
-    rubyDisplay: 'shown',
     isDark: true,
     flow: 'paginated',
     tapToTurnPage: true,
-    writingMode: 'auto',
-    pageDirection: 'auto',
+    ...FOLIO_DEFAULTS,
   };
 
   private readonly _state = signal<ReaderState>(this.defaultState);
+  private bookFolio: FolioReaderSettings = {};
   readonly state = this._state.asReadonly();
 
   readonly themes = themes;
@@ -159,13 +149,9 @@ export class ReaderStateService {
         if (settings.isDark != null) newState.isDark = settings.isDark;
        newState.tapToTurnPage = globalSettings.tapToTurnPage ?? true;
         if (settings.flow) newState.flow = settings.flow;
-        const {folio} = settings;
-        if (folio?.writingMode) newState.writingMode = folio.writingMode;
-        if (folio?.pageDirection) newState.pageDirection = folio.pageDirection;
-        if (folio?.serifFont) newState.serifFont = folio.serifFont;
-        if (folio?.sansSerifFont) newState.sansSerifFont = folio.sansSerifFont;
-        if (folio?.fontOverride) newState.fontOverride = folio.fontOverride;
-        if (folio?.rubyDisplay) newState.rubyDisplay = folio.rubyDisplay;
+        // A fork setting chosen for this book wins over the global one, which wins over the default.
+        this.bookFolio = settingScope === 'Global' ? {} : individualSetting?.folio ?? {};
+        Object.assign(newState, globalSettings.folio, this.bookFolio);
         if (settings.theme) {
           const theme = this.themes.find(t => t.name === settings.theme);
           if (theme) {
@@ -275,28 +261,15 @@ export class ReaderStateService {
     this.updateState({tapToTurnPage: enabled});
   }
 
-  setWritingMode(writingMode: ReaderWritingMode): void {
-    this.updateState({writingMode});
+  // A fork setting the reader changes in this book becomes the book's own.
+  setFolio(change: FolioReaderSettings): void {
+    this.bookFolio = {...this.bookFolio, ...change};
+    this.updateState(change);
   }
 
-  setPageDirection(pageDirection: ReaderPageDirection): void {
-    this.updateState({pageDirection});
-  }
-
-  setSerifFont(serifFont: ReaderSerifFont): void {
-    this.updateState({serifFont});
-  }
-
-  setSansSerifFont(sansSerifFont: ReaderSansSerifFont): void {
-    this.updateState({sansSerifFont});
-  }
-
-  setFontOverride(fontOverride: ReaderFontOverride): void {
-    this.updateState({fontOverride});
-  }
-
-  setRubyDisplay(rubyDisplay: ReaderRubyDisplay): void {
-    this.updateState({rubyDisplay});
+  // The fork settings chosen for this book, which is all a book stores of them.
+  folioChanges(): FolioReaderSettings {
+    return {...this.bookFolio};
   }
 
   private updateState(partial: Partial<ReaderState>): void {

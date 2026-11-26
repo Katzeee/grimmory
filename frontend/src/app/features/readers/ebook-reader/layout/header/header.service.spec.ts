@@ -25,15 +25,10 @@ describe('ReaderHeaderService', () => {
       fontFamily: null,
       isDark: true,
       flow: 'paginated',
-      writingMode: 'vertical',
-      pageDirection: 'rtl',
-      serifFont: 'noto-serif',
-      sansSerifFont: 'system',
-      fontOverride: 'off',
-      rubyDisplay: 'tap',
     })),
     toggleDarkMode: vi.fn(),
     updateFontSize: vi.fn(),
+    folioChanges: vi.fn(() => ({writingMode: 'vertical', rubyDisplay: 'tap'})),
   };
 
   const sidebarService = {
@@ -155,14 +150,7 @@ describe('ReaderHeaderService', () => {
         fontFamily: null,
         isDark: true,
         flow: 'paginated',
-        folio: {
-          writingMode: 'vertical',
-          pageDirection: 'rtl',
-          serifFont: 'noto-serif',
-          sansSerifFont: 'system',
-          fontOverride: 'off',
-          rubyDisplay: 'tap',
-        },
+        folio: {writingMode: 'vertical', rubyDisplay: 'tap'},
       }
     }, 12);
   });

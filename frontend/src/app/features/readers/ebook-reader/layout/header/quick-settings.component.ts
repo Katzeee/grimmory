@@ -1,7 +1,7 @@
 import {Component, inject, Input, output} from '@angular/core';
 import {DecimalPipe} from '@angular/common';
 import {TranslocoDirective} from '@jsverse/transloco';
-import {folioSettingsOf, ReaderStateService} from '../../state/reader-state.service';
+import {ReaderStateService} from '../../state/reader-state.service';
 import {ReaderIconComponent} from '../../shared/icon.component';
 import {BookService} from '../../../../book/service/book.service';
 import {EbookViewerSetting} from '../../../../book/model/book.model';
@@ -42,7 +42,7 @@ export class ReaderQuickSettingsComponent {
       fontFamily: this.state.fontFamily,
       isDark: this.state.isDark,
       flow: this.state.flow,
-      folio: folioSettingsOf(this.state),
+      folio: this.stateService.folioChanges(),
     };
     this.bookService.updateViewerSetting({ebookSettings: setting}, this.bookId).subscribe();
   }

@@ -2,7 +2,6 @@ import {Component, computed, inject, Input, OnInit, output, Renderer2} from '@an
 import {DecimalPipe, DOCUMENT} from '@angular/common';
 import {TranslocoDirective} from '@jsverse/transloco';
 import {
-  folioSettingsOf,
   ReaderFontOverride,
   ReaderPageDirection,
   ReaderRubyDisplay,
@@ -142,7 +141,7 @@ export class ReaderSettingsDialogComponent implements OnInit {
       fontFamily: this.state.fontFamily,
       isDark: this.state.isDark,
       flow: this.state.flow,
-      folio: folioSettingsOf(this.state),
+      folio: this.stateService.folioChanges(),
     };
     this.bookService.updateViewerSetting({ebookSettings: setting}, this.bookId).subscribe();
   }
@@ -153,24 +152,24 @@ export class ReaderSettingsDialogComponent implements OnInit {
   }
 
   setSerifFont(value: ReaderSerifFont) {
-    this.stateService.setSerifFont(value);
+    this.stateService.setFolio({serifFont: value});
     this.syncSettingsToBackend();
   }
 
   setSansSerifFont(value: ReaderSansSerifFont) {
-    this.stateService.setSansSerifFont(value);
+    this.stateService.setFolio({sansSerifFont: value});
     this.syncSettingsToBackend();
   }
 
   setFontOverride(value: ReaderFontOverride) {
-    this.stateService.setFontOverride(value);
+    this.stateService.setFolio({fontOverride: value});
     this.syncSettingsToBackend();
   }
 
   readonly rubyDisplays: ReaderRubyDisplay[] = ['shown', 'dimmed', 'tap', 'hidden'];
 
   setRubyDisplay(value: ReaderRubyDisplay) {
-    this.stateService.setRubyDisplay(value);
+    this.stateService.setFolio({rubyDisplay: value});
     this.syncSettingsToBackend();
   }
 
@@ -257,12 +256,12 @@ export class ReaderSettingsDialogComponent implements OnInit {
   }
 
   setWritingMode(writingMode: ReaderWritingMode) {
-    this.stateService.setWritingMode(writingMode);
+    this.stateService.setFolio({writingMode});
     this.syncSettingsToBackend();
   }
 
   setPageDirection(pageDirection: ReaderPageDirection) {
-    this.stateService.setPageDirection(pageDirection);
+    this.stateService.setFolio({pageDirection});
     this.syncSettingsToBackend();
   }
 

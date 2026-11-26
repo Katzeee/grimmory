@@ -344,7 +344,7 @@ export interface EpubViewerSetting {
 }
 
 // Reader settings this fork adds, kept as one value per book and in the global reader settings.
-// A setting left out follows the book.
+// Each holds only the settings the reader chose there.
 export interface FolioReaderSettings {
   writingMode?: 'auto' | 'horizontal' | 'vertical';
   pageDirection?: 'auto' | 'ltr' | 'rtl';
@@ -353,6 +353,16 @@ export interface FolioReaderSettings {
   fontOverride?: 'off' | 'serif' | 'sans-serif';
   rubyDisplay?: 'shown' | 'dimmed' | 'tap' | 'hidden';
 }
+
+// What each fork setting is until the reader chooses otherwise.
+export const FOLIO_DEFAULTS: Required<FolioReaderSettings> = {
+  writingMode: 'auto',
+  pageDirection: 'auto',
+  serifFont: 'literata',
+  sansSerifFont: 'noto-sans',
+  fontOverride: 'off',
+  rubyDisplay: 'shown',
+};
 
 export interface EbookViewerSetting {
   lineHeight: number;

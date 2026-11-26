@@ -5,7 +5,7 @@ import {FormsModule} from '@angular/forms';
 import {TranslocoDirective} from '@jsverse/transloco';
 import {ReaderPreferencesService} from '../reader-preferences.service';
 import {UserSettings} from '../../user-management/user.service';
-import {FolioReaderSettings} from '../../../book/model/book.model';
+import {FOLIO_DEFAULTS, FolioReaderSettings} from '../../../book/model/book.model';
 import {Tooltip} from '@openng/optimus-ui/tooltip';
 import {CustomFontService} from '../../../../shared/service/custom-font.service';
 import {addCustomFontsToDropdown, FontPreferenceItem} from '../../../../shared/util/custom-font.util';
@@ -209,7 +209,7 @@ export class EpubReaderPreferencesComponent {
   }
 
   get writingMode(): Required<FolioReaderSettings>['writingMode'] {
-    return this.folio.writingMode ?? 'auto';
+    return this.folio.writingMode ?? FOLIO_DEFAULTS.writingMode;
   }
 
   set writingMode(writingMode: Required<FolioReaderSettings>['writingMode']) {
@@ -217,7 +217,7 @@ export class EpubReaderPreferencesComponent {
   }
 
   get pageDirection(): Required<FolioReaderSettings>['pageDirection'] {
-    return this.folio.pageDirection ?? 'auto';
+    return this.folio.pageDirection ?? FOLIO_DEFAULTS.pageDirection;
   }
 
   set pageDirection(pageDirection: Required<FolioReaderSettings>['pageDirection']) {
@@ -243,7 +243,7 @@ export class EpubReaderPreferencesComponent {
   readonly fontOverrides: Required<FolioReaderSettings>['fontOverride'][] = ['off', 'serif', 'sans-serif'];
 
   get serifFont(): Required<FolioReaderSettings>['serifFont'] {
-    return this.folio.serifFont ?? 'literata';
+    return this.folio.serifFont ?? FOLIO_DEFAULTS.serifFont;
   }
 
   set serifFont(serifFont: Required<FolioReaderSettings>['serifFont']) {
@@ -251,7 +251,7 @@ export class EpubReaderPreferencesComponent {
   }
 
   get sansSerifFont(): Required<FolioReaderSettings>['sansSerifFont'] {
-    return this.folio.sansSerifFont ?? 'noto-sans';
+    return this.folio.sansSerifFont ?? FOLIO_DEFAULTS.sansSerifFont;
   }
 
   set sansSerifFont(sansSerifFont: Required<FolioReaderSettings>['sansSerifFont']) {
@@ -259,7 +259,7 @@ export class EpubReaderPreferencesComponent {
   }
 
   get fontOverride(): Required<FolioReaderSettings>['fontOverride'] {
-    return this.folio.fontOverride ?? 'off';
+    return this.folio.fontOverride ?? FOLIO_DEFAULTS.fontOverride;
   }
 
   set fontOverride(fontOverride: Required<FolioReaderSettings>['fontOverride']) {
@@ -269,7 +269,7 @@ export class EpubReaderPreferencesComponent {
   readonly rubyDisplays: Required<FolioReaderSettings>['rubyDisplay'][] = ['shown', 'dimmed', 'tap', 'hidden'];
 
   get rubyDisplay(): Required<FolioReaderSettings>['rubyDisplay'] {
-    return this.folio.rubyDisplay ?? 'shown';
+    return this.folio.rubyDisplay ?? FOLIO_DEFAULTS.rubyDisplay;
   }
 
   set rubyDisplay(rubyDisplay: Required<FolioReaderSettings>['rubyDisplay']) {
