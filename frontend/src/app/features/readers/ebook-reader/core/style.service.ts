@@ -2,6 +2,7 @@ import {inject, Service} from '@angular/core';
 import {ReaderState} from '../state/reader-state.service';
 import {EpubCustomFontService} from '../features/fonts/custom-font.service';
 import {BundledFont, bundledFontStylesheetUrl, LITERATA, notoSerifCjk} from '../features/fonts/bundled-fonts';
+import {BookLayout} from './layout.service';
 
 interface FontChoice {
   families: string[];
@@ -22,14 +23,14 @@ interface ReaderRenderer {
 export class ReaderStyleService {
   private readonly epubCustomFontService = inject(EpubCustomFontService);
 
-  generateCSS(state: ReaderState, language?: string): string {
+  generateCSS(state: ReaderState, layout?: BookLayout): string {
     const {lineHeight, justify, hyphenate, fontSize, theme, fontFamily, cjkFont, writingMode} = state;
     const userStylesheet = '';
     const overrideFont = false;
     const mediaActiveClass = 'media-active';
 
     const latin = this.latinFont(fontFamily);
-    const cjk = cjkFont === 'noto-serif' ? this.bundledFont(notoSerifCjk(language), 'serif') : null;
+    const cjk = cjkFont === 'noto-serif' ? this.bundledFont(notoSerifCjk(layout?.language), 'serif') : null;
     // Latin fonts carry no CJK glyphs, so CJK text falls through them to the CJK font. A generic
     // family covers every script, so it closes the stack.
     const fontStack = [...(latin?.families ?? []), ...(cjk?.families ?? []), latin?.generic ?? cjk?.generic]
@@ -214,22 +215,22 @@ export class ReaderStyleService {
 
   // The renderer splits a vertical page into stacked tiers once the page is taller than the max
   // inline size, so vertical lines take the longer window axis and run the full page height.
-  maxInlineSize(state: ReaderState, vertical: boolean): string {
-    const size = vertical
+  maxInlineSize(state: ReaderState, layout: BookLayout): string {
+    const size = layout.vertical
       ? Math.max(window.innerWidth, window.innerHeight, state.maxInlineSize)
       : state.maxInlineSize;
     return `${size}px`;
   }
 
-  applyStylesToRenderer(renderer: ReaderRenderer | null | undefined, state: ReaderState, vertical = false, language?: string): void {
+  applyStylesToRenderer(renderer: ReaderRenderer | null | undefined, state: ReaderState, layout: BookLayout = {vertical: false}): void {
     if (!renderer) return;
 
     renderer.setAttribute('max-column-count', state.maxColumnCount);
     renderer.setAttribute('gap', `${state.gap * 100}%`);
-    renderer.setAttribute('max-inline-size', this.maxInlineSize(state, vertical));
+    renderer.setAttribute('max-inline-size', this.maxInlineSize(state, layout));
     renderer.setAttribute('max-block-size', `${state.maxBlockSize}px`);
     if (typeof renderer.setStyles === 'function') {
-      const css = this.generateCSS(state, language);
+      const css = this.generateCSS(state, layout);
       renderer.setStyles(css);
     }
 

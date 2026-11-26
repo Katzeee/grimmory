@@ -1,6 +1,7 @@
 import {inject, Service, signal} from '@angular/core';
 import {ReaderStateService} from '../../state/reader-state.service';
 import {ReaderStyleService} from '../../core/style.service';
+import {ReaderLayoutService} from '../../core/layout.service';
 
 const FOOTNOTES_URL = '/assets/foliate/footnotes.js';
 
@@ -29,13 +30,19 @@ interface FootnoteView extends HTMLElement {
   close?(): void;
 }
 
-export interface FootnoteBook {
-  metadata?: {language?: string | string[]};
-}
-
 interface LinkDetail {
   a: Element;
   href: string;
+}
+
+// The open book, which the engine's footnote handler resolves links against.
+interface FootnoteBook {
+  readonly sections: unknown;
+}
+
+// The engine's view, which dispatches link events and holds the open book.
+interface LinkSource extends EventTarget {
+  book: FootnoteBook | undefined;
 }
 
 interface FootnoteHandlerLike extends EventTarget {
@@ -56,6 +63,7 @@ interface FootnotesModule {
 export class ReaderFootnoteService {
   private readonly stateService = inject(ReaderStateService);
   private readonly styleService = inject(ReaderStyleService);
+  private readonly layout = inject(ReaderLayoutService);
 
   private readonly openState = signal(false);
   readonly open = this.openState.asReadonly();
@@ -66,7 +74,6 @@ export class ReaderFootnoteService {
   private handler: FootnoteHandlerLike | null = null;
   private container: HTMLElement | null = null;
   private view: FootnoteView | null = null;
-  private language: string | undefined;
   private navigate: (href: string) => void = () => undefined;
 
   // A link is claimed while its click is dispatched, so the handler loads ahead of any click.
@@ -87,9 +94,10 @@ export class ReaderFootnoteService {
    * Opens the note behind a link the reader clicked. A link that is not a note is left to
    * navigate as usual, and one that looked like a note but leads to none navigates instead.
    */
-  handleLink(event: Event, book: FootnoteBook | undefined, navigate: (href: string) => void): void {
+  handleLink(event: Event, navigate: (href: string) => void): void {
+    // SAFETY: the reader listens for link events on the engine's view.
+    const book = (event.currentTarget as LinkSource | null)?.book;
     if (!this.handler || !book) return;
-    this.language = [book.metadata?.language].flat()[0];
     this.navigate = navigate;
     // SAFETY: the view's link event carries the clicked anchor and its resolved href.
     const {href} = (event as CustomEvent<LinkDetail>).detail;
@@ -129,7 +137,7 @@ export class ReaderFootnoteService {
       renderer.setAttribute(`margin-${side}`, '0px');
     }
     renderer.setAttribute('gap', '0%');
-    renderer.setStyles?.(this.styleService.generateCSS(this.stateService.state(), this.language));
+    renderer.setStyles?.(this.styleService.generateCSS(this.stateService.state(), this.layout.measure()));
 
     view.addEventListener('link', event => this.followNoteLink(event));
   }
